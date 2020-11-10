@@ -20,8 +20,8 @@ import (
 	"time"
 
 	werror "github.com/palantir/witchcraft-go-error"
-	"github.com/palantir/witchcraft-go-server/v2/conjure/witchcraft/api/health"
-	whealth "github.com/palantir/witchcraft-go-server/v2/status/health"
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/sources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -40,7 +40,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 		{
 			name:          "healthy when there are no items",
 			errors:        nil,
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "healthy when there are only nil items",
@@ -49,7 +49,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				nil,
 				nil,
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "unhealthy when there is at least one err",
@@ -60,7 +60,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #2"),
 				nil,
 			},
-			expectedCheck: whealth.UnhealthyHealthCheckResult(testCheckType, "Error #2"),
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2"),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -90,7 +90,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 		{
 			name:          "healthy when there are no items",
 			errors:        nil,
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "healthy when there are only nil items",
@@ -99,7 +99,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				nil,
 				nil,
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "healthy when there is at least one non nil err",
@@ -110,7 +110,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #2"),
 				nil,
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "unhealthy when there are only non nil items",
@@ -118,7 +118,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #1"),
 				werror.ErrorWithContextParams(context.Background(), "Error #2"),
 			},
-			expectedCheck: whealth.UnhealthyHealthCheckResult(testCheckType, "Error #2"),
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2"),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {

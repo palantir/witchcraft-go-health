@@ -20,8 +20,8 @@ import (
 	"time"
 
 	werror "github.com/palantir/witchcraft-go-error"
-	"github.com/palantir/witchcraft-go-server/v2/conjure/witchcraft/api/health"
-	whealth "github.com/palantir/witchcraft-go-server/v2/status/health"
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/sources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -41,7 +41,7 @@ func TestMultiKeyUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 		{
 			name:          "healthy when there are no items",
 			keyErrorPairs: nil,
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "healthy when all keys are completely healthy",
@@ -51,7 +51,7 @@ func TestMultiKeyUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				{key: "2"},
 				{key: "3"},
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "unhealthy when some keys are partially healthy",
@@ -120,7 +120,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 		{
 			name:          "healthy when there are no items",
 			keyErrorPairs: nil,
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "healthy when all keys are completely healthy",
@@ -130,7 +130,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 				{key: "2"},
 				{key: "3"},
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "healthy when all keys are partially healthy",
@@ -144,7 +144,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 				{key: "3", err: werror.Error("Error #1 for key 3")},
 				{key: "3", err: werror.Error("Error #2 for key 3")},
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "unhealthy when some keys are completely unhealthy",
@@ -226,7 +226,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
 				{key: "3", err: werror.Error("Error #1 for key 3")},
 				{key: "3", err: werror.Error("Error #2 for key 3")},
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "healthy when some keys are completely unhealthy",
@@ -393,7 +393,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenHealthy
 
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
-			testCheckType: whealth.HealthyHealthCheckResult(testCheckType),
+			testCheckType: sources.HealthyHealthCheckResult(testCheckType),
 		},
 	}, source.HealthStatus(ctx))
 }
@@ -461,7 +461,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenGap(t *
 
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
-			testCheckType: whealth.HealthyHealthCheckResult(testCheckType),
+			testCheckType: sources.HealthyHealthCheckResult(testCheckType),
 		},
 	}, source.HealthStatus(ctx))
 }
@@ -556,7 +556,7 @@ func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 		{
 			name:          "healthy when there are no items",
 			keyErrorPairs: nil,
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "healthy when all keys are completely healthy",
@@ -566,7 +566,7 @@ func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 				{key: "2"},
 				{key: "3"},
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "unhealthy when some keys are unhealthy",
@@ -591,7 +591,7 @@ func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 			keyErrorPairs: []keyErrorPair{
 				{key: "1", err: werror.Error("Error #1 for key 1")},
 			},
-			expectedCheck:            whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck:            sources.HealthyHealthCheckResult(testCheckType),
 			durationAfterSubmissions: time.Hour,
 		},
 		{
@@ -619,7 +619,7 @@ func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 				{key: "2"},
 				{key: "3"},
 			},
-			expectedCheck: whealth.HealthyHealthCheckResult(testCheckType),
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
 			name: "unhealthy when all keys are completely unhealthy",

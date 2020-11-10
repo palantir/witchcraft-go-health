@@ -19,8 +19,8 @@ import (
 	"time"
 
 	werror "github.com/palantir/witchcraft-go-error"
-	"github.com/palantir/witchcraft-go-server/v2/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-server/v2/status"
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/status"
 )
 
 // ItemSubmitter allows components of code whose functionality dictates health status to just consume this single-method interface.

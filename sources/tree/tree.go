@@ -17,8 +17,8 @@ package tree
 import (
 	"context"
 
-	"github.com/palantir/witchcraft-go-server/v2/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-server/v2/status"
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/status"
 )
 
 type (

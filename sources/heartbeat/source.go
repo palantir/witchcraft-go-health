@@ -20,8 +20,8 @@ import (
 	"time"
 
 	werror "github.com/palantir/witchcraft-go-error"
-	"github.com/palantir/witchcraft-go-server/v2/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-server/v2/status"
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/status"
 )
 
 // HealthCheckSource is a thread-safe HealthCheckSource based on heartbeats.

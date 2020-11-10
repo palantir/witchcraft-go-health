@@ -20,9 +20,9 @@ import (
 	"time"
 
 	werror "github.com/palantir/witchcraft-go-error"
-	"github.com/palantir/witchcraft-go-server/v2/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-server/v2/status"
-	whealth "github.com/palantir/witchcraft-go-server/v2/status/health"
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/sources"
+	"github.com/palantir/witchcraft-go-health/status"
 )
 
 // ErrorSubmitter allows components whose functionality dictates a portion of health status to only consume this interface.
@@ -192,15 +192,15 @@ func (h *healthyIfNotAllErrorsSource) HealthStatus(ctx context.Context) health.H
 
 	var healthCheckResult health.HealthCheckResult
 	if h.hasSuccessInWindow() {
-		healthCheckResult = whealth.HealthyHealthCheckResult(h.checkType)
+		healthCheckResult = sources.HealthyHealthCheckResult(h.checkType)
 	} else if h.hasErrorInWindow() {
 		if h.lastErrorTime.Before(h.repairingDeadline) {
-			healthCheckResult = whealth.RepairingHealthCheckResult(h.checkType, h.lastError.Error())
+			healthCheckResult = sources.RepairingHealthCheckResult(h.checkType, h.lastError.Error())
 		} else {
-			healthCheckResult = whealth.UnhealthyHealthCheckResult(h.checkType, h.lastError.Error())
+			healthCheckResult = sources.UnhealthyHealthCheckResult(h.checkType, h.lastError.Error())
 		}
 	} else {
-		healthCheckResult = whealth.HealthyHealthCheckResult(h.checkType)
+		healthCheckResult = sources.HealthyHealthCheckResult(h.checkType)
 	}
 
 	return health.HealthStatus{

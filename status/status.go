@@ -17,11 +17,8 @@ package status
 import (
 	"context"
 	"net/http"
-	"sync/atomic"
 
-	"github.com/palantir/conjure-go-runtime/v2/conjure-go-server/httpserver"
-	"github.com/palantir/witchcraft-go-server/v2/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-server/v2/witchcraft/refreshable"
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
 )
 
 var (
@@ -69,55 +66,6 @@ func (c *combinedHealthCheckSource) HealthStatus(ctx context.Context) health.Hea
 	return result
 }
 
-// HealthHandler is responsible for checking the health-check-shared-secret if it is provided and
-// invoking a HealthCheckSource if the secret is correct or unset.
-type healthHandlerImpl struct {
-	healthCheckSharedSecret refreshable.String
-	check                   HealthCheckSource
-	previousHealth          *atomic.Value
-	changeHandler           HealthStatusChangeHandler
-}
-
-func NewHealthCheckHandler(checkSource HealthCheckSource, sharedSecret refreshable.String, healthStatusChangeHandlers []HealthStatusChangeHandler) http.Handler {
-	previousHealth := &atomic.Value{}
-	previousHealth.Store(health.HealthStatus{})
-	allHandlers := []HealthStatusChangeHandler{loggingHealthStatusChangeHandler()}
-	if len(healthStatusChangeHandlers) > 0 {
-		allHandlers = append(allHandlers, healthStatusChangeHandlers...)
-	}
-	return &healthHandlerImpl{
-		healthCheckSharedSecret: sharedSecret,
-		check:                   checkSource,
-		previousHealth:          previousHealth,
-		changeHandler:           multiHealthStatusChangeHandler(allHandlers),
-	}
-}
-
-func (h *healthHandlerImpl) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	metadata, newHealthStatusCode := h.computeNewHealthStatus(req)
-	previousHealth := h.previousHealth.Load()
-	if previousHealth != nil {
-		if previousHealthTyped, ok := previousHealth.(health.HealthStatus); ok && checksDiffer(previousHealthTyped.Checks, metadata.Checks) {
-			h.changeHandler.HandleHealthStatusChange(req.Context(), previousHealthTyped, metadata)
-		}
-	}
-
-	h.previousHealth.Store(metadata)
-
-	httpserver.WriteJSONResponse(w, metadata, newHealthStatusCode)
-}
-
-func (h *healthHandlerImpl) computeNewHealthStatus(req *http.Request) (health.HealthStatus, int) {
-	if sharedSecret := h.healthCheckSharedSecret.CurrentString(); sharedSecret != "" {
-		token, err := httpserver.ParseBearerTokenHeader(req)
-		if err != nil || sharedSecret != token {
-			return health.HealthStatus{}, http.StatusUnauthorized
-		}
-	}
-	metadata := h.check.HealthStatus(req.Context())
-	return metadata, HealthStatusCode(metadata)
-}
-
 // HealthStateStatusCode returns the http status code for the provided health.HealthState_Value or
 // http.StatusInternalServerError if the health state value is not recognized.
 func HealthStateStatusCode(state health.HealthState_Value) int {
@@ -131,29 +79,10 @@ func HealthStateStatusCode(state health.HealthState_Value) int {
 func HealthStatusCode(metadata health.HealthStatus) int {
 	worst := http.StatusOK
 	for _, result := range metadata.Checks {
-		code, ok := healthStateStatusCodes[result.State.Value()]
-		if !ok {
-			code = http.StatusInternalServerError
-		}
+		code := HealthStateStatusCode(result.State.Value())
 		if worst < code {
 			worst = code
 		}
 	}
 	return worst
-}
-
-func checksDiffer(previousChecks, newChecks map[health.CheckType]health.HealthCheckResult) bool {
-	if len(previousChecks) != len(newChecks) {
-		return true
-	}
-	for previousCheckType, previouscheckResult := range previousChecks {
-		newCheckResult, checkTypePresent := newChecks[previousCheckType]
-		if !checkTypePresent {
-			return true
-		}
-		if previouscheckResult.State != newCheckResult.State {
-			return true
-		}
-	}
-	return false
 }

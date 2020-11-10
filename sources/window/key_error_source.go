@@ -20,9 +20,9 @@ import (
 	"time"
 
 	werror "github.com/palantir/witchcraft-go-error"
-	"github.com/palantir/witchcraft-go-server/v2/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-server/v2/status"
-	whealth "github.com/palantir/witchcraft-go-server/v2/status/health"
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/sources"
+	"github.com/palantir/witchcraft-go-health/status"
 )
 
 // KeyedErrorSubmitter allows components whose functionality dictates a portion of health status to only consume this interface.
@@ -166,7 +166,7 @@ func (m *multiKeyHealthyIfNoRecentErrorsSource) HealthStatus(ctx context.Context
 			Params:  params,
 		}
 	} else {
-		healthCheckResult = whealth.HealthyHealthCheckResult(m.checkType)
+		healthCheckResult = sources.HealthyHealthCheckResult(m.checkType)
 	}
 
 	return health.HealthStatus{
@@ -327,7 +327,7 @@ func (m *multiKeyHealthyIfNotAllErrorsSource) HealthStatus(ctx context.Context) 
 			healthCheckResult.State = health.New_HealthState(health.HealthState_ERROR)
 		}
 	} else {
-		healthCheckResult = whealth.HealthyHealthCheckResult(m.checkType)
+		healthCheckResult = sources.HealthyHealthCheckResult(m.checkType)
 	}
 
 	return health.HealthStatus{
