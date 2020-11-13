@@ -24,17 +24,14 @@ import (
 
 	"github.com/palantir/conjure-go-runtime/v2/conjure-go-contract/codecs"
 	"github.com/palantir/pkg/uuid"
-	werror "github.com/palantir/witchcraft-go-error"
 	wparams "github.com/palantir/witchcraft-go-params"
 )
 
-func newGenericError(cause error, errorType ErrorType, params wparams.ParamStorer) genericError {
+func newGenericError(errorType ErrorType, params wparams.ParamStorer) genericError {
 	return genericError{
 		errorType:       errorType,
 		errorInstanceID: uuid.NewUUID(),
 		params:          params,
-		cause:           cause,
-		stack:           werror.NewStackTraceWithSkip(2),
 	}
 }
 
@@ -45,8 +42,6 @@ type genericError struct {
 	errorType       ErrorType
 	errorInstanceID uuid.UUID
 	params          wparams.ParamStorer
-	cause           error
-	stack           werror.StackTrace
 }
 
 var (
@@ -70,22 +65,6 @@ func (e genericError) Error() string {
 	return e.String()
 }
 
-func (e genericError) Cause() error {
-	return e.cause
-}
-
-func (e genericError) StackTrace() werror.StackTrace {
-	return e.stack
-}
-
-func (e genericError) Message() string {
-	return fmt.Sprintf("%s %s", e.Code().String(), e.Name())
-}
-
-func (e genericError) Format(state fmt.State, verb rune) {
-	werror.Format(e, e.safeParams(), state, verb)
-}
-
 func (e genericError) Code() ErrorCode {
 	return e.errorType.code
 }
@@ -98,7 +77,7 @@ func (e genericError) InstanceID() uuid.UUID {
 	return e.errorInstanceID
 }
 
-func (e genericError) safeParams() map[string]interface{} {
+func (e genericError) SafeParams() map[string]interface{} {
 	// Copy safe params map (so we don't mutate the underlying one) and add errorInstanceId
 	safeParams := make(map[string]interface{}, len(e.params.SafeParams())+1)
 	for k, v := range e.params.SafeParams() {
@@ -108,24 +87,8 @@ func (e genericError) safeParams() map[string]interface{} {
 	return safeParams
 }
 
-func (e genericError) SafeParams() map[string]interface{} {
-	safeParams, _ := werror.ParamsFromError(e.cause)
-	for k, v := range e.safeParams() {
-		if _, exists := safeParams[k]; !exists {
-			safeParams[k] = v
-		}
-	}
-	return safeParams
-}
-
 func (e genericError) UnsafeParams() map[string]interface{} {
-	_, unsafeParams := werror.ParamsFromError(e.cause)
-	for k, v := range e.params.UnsafeParams() {
-		if _, exists := unsafeParams[k]; !exists {
-			unsafeParams[k] = v
-		}
-	}
-	return unsafeParams
+	return e.params.UnsafeParams()
 }
 
 func (e genericError) MarshalJSON() ([]byte, error) {
