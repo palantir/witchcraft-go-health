@@ -17,7 +17,6 @@ package transform
 import (
 	"context"
 
-	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
 	"github.com/palantir/witchcraft-go-health/status"
 )
@@ -29,16 +28,20 @@ type source struct {
 	healthCheckSource           status.HealthCheckSource
 }
 
-func NewSource(healthStatusTransformerFunc HealthStatusTransformerFunc, healthCheckSource status.HealthCheckSource) (status.HealthCheckSource, error) {
-	if healthStatusTransformerFunc == nil || healthCheckSource == nil {
-		return nil, werror.Error("healthStatusTransformerFunc and healthCheckSource must not be nil")
-	}
+func NewSource(healthStatusTransformerFunc HealthStatusTransformerFunc, healthCheckSource status.HealthCheckSource) status.HealthCheckSource {
 	return source{
 		healthStatusTransformerFunc: healthStatusTransformerFunc,
 		healthCheckSource:           healthCheckSource,
-	}, nil
+	}
 }
 
 func (s source) HealthStatus(ctx context.Context) health.HealthStatus {
-	return s.healthStatusTransformerFunc(s.healthCheckSource.HealthStatus(ctx))
+	if s.healthCheckSource != nil {
+		raw := s.healthCheckSource.HealthStatus(ctx)
+		if s.healthStatusTransformerFunc != nil {
+			return s.healthStatusTransformerFunc(raw)
+		}
+		return raw
+	}
+	return health.HealthStatus{}
 }

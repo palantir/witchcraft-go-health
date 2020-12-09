@@ -35,8 +35,7 @@ func TestSource(t *testing.T) {
 	}
 	keyed := store.NewKeyedErrorHealthCheckSource("foo", "bar")
 	keyed.Submit("foo", werror.Error("err"))
-	source, err := NewSource(mapper, keyed)
-	assert.NoError(t, err)
+	source := NewSource(mapper, keyed)
 	status := source.HealthStatus(context.Background())
 	assert.Equal(t, expected, status)
 }
@@ -46,8 +45,20 @@ func TestSourceNilChecks(t *testing.T) {
 		return health.HealthStatus{}
 	}
 	keyed := store.NewKeyedErrorHealthCheckSource("foo", "bar")
-	_, err := NewSource(nil, keyed)
-	assert.Error(t, err)
-	_, err = NewSource(mapper, nil)
-	assert.Error(t, err)
+	source := NewSource(nil, keyed)
+	assert.Equal(t, source.HealthStatus(context.Background()), health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"foo": {
+				Type:    "foo",
+				State:   health.New_HealthState(health.HealthState_HEALTHY),
+				Message: toString("bar"),
+			},
+		},
+	})
+	source = NewSource(mapper, nil)
+	assert.Equal(t, source.HealthStatus(context.Background()), health.HealthStatus{})
+}
+
+func toString(s string) *string {
+	return &s
 }
