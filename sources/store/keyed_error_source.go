@@ -16,9 +16,9 @@ package store
 
 import (
 	"context"
-	werror "github.com/palantir/witchcraft-go-error"
 	"sync"
 
+	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
 	"github.com/palantir/witchcraft-go-health/status"
 )

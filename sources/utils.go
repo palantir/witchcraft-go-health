@@ -25,7 +25,7 @@ func UnhealthyHealthCheckResult(checkType health.CheckType, message string, para
 		Type:    checkType,
 		State:   health.New_HealthState(health.HealthState_ERROR),
 		Message: &message,
-		Params: params,
+		Params:  params,
 	}
 }
 
@@ -35,7 +35,7 @@ func RepairingHealthCheckResult(checkType health.CheckType, message string, para
 		Type:    checkType,
 		State:   health.New_HealthState(health.HealthState_REPAIRING),
 		Message: &message,
-		Params: params,
+		Params:  params,
 	}
 }
 
