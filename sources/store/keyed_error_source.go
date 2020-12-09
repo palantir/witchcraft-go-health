@@ -20,6 +20,7 @@ import (
 
 	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/sources"
 	"github.com/palantir/witchcraft-go-health/status"
 )
 
@@ -81,9 +82,12 @@ func (k *keyedErrorHealthCheckSource) HealthStatus(ctx context.Context) health.H
 			},
 		}
 	}
-	params := make(map[string]interface{}, len(k.keyedErrors))
+	params := map[string]interface{}{}
 	for key, err := range k.keyedErrors {
 		params[key] = werror.GenerateErrorString(err, false)
+		for k, v := range sources.ErrorToUnderlyingSafeParamsMap(err) {
+			params[k] = v
+		}
 	}
 	return health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{

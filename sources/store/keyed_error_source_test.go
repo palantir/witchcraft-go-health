@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"testing"
 
+	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,14 +31,15 @@ var (
 func TestKeyedMessengerHealthStateError(t *testing.T) {
 	keyedErrorSource := NewKeyedErrorHealthCheckSource("TEST", testMessage)
 	keyedErrorSource.Submit("1", fmt.Errorf("error message 1"))
-	keyedErrorSource.Submit("2", fmt.Errorf("error message 2"))
+	keyedErrorSource.Submit("2", werror.Error("error message 2", werror.SafeParam("foo", "bar")))
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			"TEST": {
 				Message: &testMessage,
 				Params: map[string]interface{}{
-					"1": "error message 1",
-					"2": "error message 2",
+					"1":   "error message 1",
+					"2":   "error message 2 foo:bar\n\ngithub.com/palantir/witchcraft-go-health/sources/store.TestKeyedMessengerHealthStateError\n\t/Users/ksimons/go/src/github.com/palantir/witchcraft-go-health/sources/store/keyed_error_source_test.go:34\ntesting.tRunner\n\t/usr/local/go/src/testing/testing.go:1039\nruntime.goexit\n\t/usr/local/go/src/runtime/asm_amd64.s:1373",
+					"foo": "bar",
 				},
 				State: health.New_HealthState(health.HealthState_ERROR),
 				Type:  "TEST",
