@@ -16,6 +16,7 @@ package store
 
 import (
 	"context"
+	werror "github.com/palantir/witchcraft-go-error"
 	"sync"
 
 	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
@@ -82,7 +83,7 @@ func (k *keyedErrorHealthCheckSource) HealthStatus(ctx context.Context) health.H
 	}
 	params := make(map[string]interface{}, len(k.keyedErrors))
 	for key, err := range k.keyedErrors {
-		params[key] = err.Error()
+		params[key] = werror.GenerateErrorString(err, false)
 	}
 	return health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{

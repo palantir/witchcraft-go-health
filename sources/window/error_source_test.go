@@ -60,7 +60,9 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #2"),
 				nil,
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2"),
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2", map[string]interface{}{
+				"richErrorMessage": "Error #2\n\ngithub.com/palantir/witchcraft-go-health/sources/window.TestUnhealthyIfAtLeastOneErrorSource\n\t/Users/ksimons/go/src/github.com/palantir/witchcraft-go-health/sources/window/error_source_test.go:60\ntesting.tRunner\n\t/usr/local/go/src/testing/testing.go:1039\nruntime.goexit\n\t/usr/local/go/src/runtime/asm_amd64.s:1373",
+			}),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -118,7 +120,9 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #1"),
 				werror.ErrorWithContextParams(context.Background(), "Error #2"),
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2"),
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2", map[string]interface{}{
+				"richErrorMessage": "Error #2\n\ngithub.com/palantir/witchcraft-go-health/sources/window.TestHealthyIfNotAllErrorsSource\n\t/Users/ksimons/go/src/github.com/palantir/witchcraft-go-health/sources/window/error_source_test.go:121\ntesting.tRunner\n\t/usr/local/go/src/testing/testing.go:1039\nruntime.goexit\n\t/usr/local/go/src/runtime/asm_amd64.s:1373",
+			}),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {

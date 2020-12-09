@@ -17,6 +17,7 @@ package periodic
 import (
 	"context"
 	"fmt"
+	"github.com/palantir/witchcraft-go-health/sources"
 	"sync"
 	"time"
 
@@ -202,6 +203,7 @@ func newDefaultHealthCheckSource(checkType health.CheckType, poll func() error) 
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
 						Message: stringPtr(err.Error()),
+						Params: sources.ErrorToRichParamsMap(err),
 					}
 				}
 				return &health.HealthCheckResult{
