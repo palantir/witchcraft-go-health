@@ -73,7 +73,6 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				source.Submit(err)
 			}
 			actualStatus := source.HealthStatus(context.Background())
-			// We check the param keys only
 			expectedStatus := health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
 					testCheckType: testCase.expectedCheck,
