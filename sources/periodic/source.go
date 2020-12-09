@@ -203,7 +203,7 @@ func newDefaultHealthCheckSource(checkType health.CheckType, poll func() error) 
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
 						Message: stringPtr(err.Error()),
-						Params:  sources.ErrorToUnderlyingSafeParamsMap(err),
+						Params:  sources.SafeParamsFromError(err),
 					}
 				}
 				return &health.HealthCheckResult{

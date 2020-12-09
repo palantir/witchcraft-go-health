@@ -195,9 +195,9 @@ func (h *healthyIfNotAllErrorsSource) HealthStatus(ctx context.Context) health.H
 		healthCheckResult = sources.HealthyHealthCheckResult(h.checkType)
 	} else if h.hasErrorInWindow() {
 		if h.lastErrorTime.Before(h.repairingDeadline) {
-			healthCheckResult = sources.RepairingHealthCheckResult(h.checkType, h.lastError.Error(), sources.ErrorToUnderlyingSafeParamsMap(h.lastError))
+			healthCheckResult = sources.RepairingHealthCheckResult(h.checkType, h.lastError.Error(), sources.SafeParamsFromError(h.lastError))
 		} else {
-			healthCheckResult = sources.UnhealthyHealthCheckResult(h.checkType, h.lastError.Error(), sources.ErrorToUnderlyingSafeParamsMap(h.lastError))
+			healthCheckResult = sources.UnhealthyHealthCheckResult(h.checkType, h.lastError.Error(), sources.SafeParamsFromError(h.lastError))
 		}
 	} else {
 		healthCheckResult = sources.HealthyHealthCheckResult(h.checkType)

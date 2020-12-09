@@ -47,7 +47,8 @@ func HealthyHealthCheckResult(checkType health.CheckType) health.HealthCheckResu
 	}
 }
 
-func ErrorToUnderlyingSafeParamsMap(err error) map[string]interface{} {
+// SafeParamsFromError returns the safeParam map from the given error
+func SafeParamsFromError(err error) map[string]interface{} {
 	safeParams, _ := werror.ParamsFromError(err)
 	return safeParams
 }
