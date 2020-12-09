@@ -38,7 +38,7 @@ func TestKeyedMessengerHealthStateError(t *testing.T) {
 				Message: &testMessage,
 				Params: map[string]interface{}{
 					"1":   "error message 1",
-					"2":   "error message 2 foo:bar\n\ngithub.com/palantir/witchcraft-go-health/sources/store.TestKeyedMessengerHealthStateError\n\t/Users/ksimons/go/src/github.com/palantir/witchcraft-go-health/sources/store/keyed_error_source_test.go:34\ntesting.tRunner\n\t/usr/local/go/src/testing/testing.go:1039\nruntime.goexit\n\t/usr/local/go/src/runtime/asm_amd64.s:1373",
+					"2":   "error message 2",
 					"foo": "bar",
 				},
 				State: health.New_HealthState(health.HealthState_ERROR),
