@@ -28,7 +28,7 @@ type source struct {
 	healthCheckSource           status.HealthCheckSource
 }
 
-func NewSource(healthStatusTransformerFunc HealthStatusTransformerFunc, healthCheckSource status.HealthCheckSource) status.HealthCheckSource {
+func NewSource(healthCheckSource status.HealthCheckSource, healthStatusTransformerFunc HealthStatusTransformerFunc) status.HealthCheckSource {
 	return source{
 		healthStatusTransformerFunc: healthStatusTransformerFunc,
 		healthCheckSource:           healthCheckSource,
