@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Add simple library helper for transforming HealthCheckSources
+  links:
+  - https://github.com/palantir/witchcraft-go-health/pull/6
