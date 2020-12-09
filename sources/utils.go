@@ -47,8 +47,7 @@ func HealthyHealthCheckResult(checkType health.CheckType) health.HealthCheckResu
 	}
 }
 
-func ErrorToRichParamsMap(err error) map[string]interface{} {
-	return map[string]interface{}{
-		"richErrorMessage": werror.GenerateErrorString(err, false),
-	}
+func ErrorToUnderlyingSafeParamsMap(err error) map[string]interface{} {
+	safeParams, _ := werror.ParamsFromError(err)
+	return safeParams
 }
