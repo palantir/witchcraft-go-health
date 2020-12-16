@@ -132,7 +132,7 @@ func NewAnchoredHealthyIfNotAllErrorsSource(checkType health.CheckType, windowSi
 // It returns, if there are only non-nil errors, the latest non-nil error as an unhealthy check.
 // If there are no items, returns healthy.
 type errorHealthCheckSource struct {
-	errorMode ErrorMode
+	errorMode            ErrorMode
 	timeProvider         TimeProvider
 	windowSize           time.Duration
 	lastErrorTime        time.Time
@@ -155,7 +155,7 @@ func newErrorHealthCheckSource(conf errorSourceConfig) (ErrorHealthCheckSource, 
 	}
 
 	source := &errorHealthCheckSource{
-		errorMode: conf.errorMode,
+		errorMode:            conf.errorMode,
 		timeProvider:         conf.timeProvider,
 		windowSize:           conf.windowSize,
 		checkType:            conf.checkType,

@@ -1,8 +1,9 @@
 package window
 
 import (
-	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
 	"time"
+
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
 )
 
 // ErrorMode is an enum for the available behaviors for error based window health check sources.
@@ -21,27 +22,27 @@ const (
 type ErrorOption func(conf *errorSourceConfig)
 
 const (
-	defaultWindowSize = 10 * time.Minute
+	defaultWindowSize                         = 10 * time.Minute
 	defaultRepairingGracePeriod time.Duration = 0
 )
 
 type errorSourceConfig struct {
-	errorMode ErrorMode
-	checkType health.CheckType
-	windowSize time.Duration
-	repairingGracePeriod time.Duration
+	errorMode              ErrorMode
+	checkType              health.CheckType
+	windowSize             time.Duration
+	repairingGracePeriod   time.Duration
 	requireFirstFullWindow bool
-	timeProvider TimeProvider
+	timeProvider           TimeProvider
 }
 
 func defaultErrorSourceConfig(checkType health.CheckType, errorMode ErrorMode) errorSourceConfig {
 	return errorSourceConfig{
-		errorMode: errorMode,
-checkType: checkType,
-windowSize: defaultWindowSize,
-repairingGracePeriod: defaultRepairingGracePeriod,
-requireFirstFullWindow: false,
-timeProvider: NewOrdinaryTimeProvider(),
+		errorMode:              errorMode,
+		checkType:              checkType,
+		windowSize:             defaultWindowSize,
+		repairingGracePeriod:   defaultRepairingGracePeriod,
+		requireFirstFullWindow: false,
+		timeProvider:           NewOrdinaryTimeProvider(),
 	}
 }
 
