@@ -1,0 +1,89 @@
+package window
+
+import (
+	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"time"
+)
+
+// ErrorMode is an enum for the available behaviors for error based window health check sources.
+type ErrorMode string
+
+const (
+	// UnhealthyIfAtLeastOneError makes the error submitter based health
+	// check source return unhealthy if there are any errors in thw window.
+	UnhealthyIfAtLeastOneError ErrorMode = "UnhealthyIfAtLeastOneError"
+	// HealthyIfNotAllErrors makes the error submitter based health
+	// check source return unhealthy if there are only errors in thw window.
+	HealthyIfNotAllErrors ErrorMode = "HealthyIfNotAllErrors"
+)
+
+// ErrorOption is an option for an error submitter based window health check source.
+type ErrorOption func(conf *errorSourceConfig)
+
+const (
+	defaultWindowSize = 10 * time.Minute
+	defaultRepairingGracePeriod time.Duration = 0
+)
+
+type errorSourceConfig struct {
+	errorMode ErrorMode
+	checkType health.CheckType
+	windowSize time.Duration
+	repairingGracePeriod time.Duration
+	requireFirstFullWindow bool
+	timeProvider TimeProvider
+}
+
+func defaultErrorSourceConfig(checkType health.CheckType, errorMode ErrorMode) errorSourceConfig {
+	return errorSourceConfig{
+		errorMode: errorMode,
+checkType: checkType,
+windowSize: defaultWindowSize,
+repairingGracePeriod: defaultRepairingGracePeriod,
+requireFirstFullWindow: false,
+timeProvider: NewOrdinaryTimeProvider(),
+	}
+}
+
+func (e *errorSourceConfig) apply(options ...ErrorOption) {
+	for _, option := range options {
+		option(e)
+	}
+}
+
+// WithWindowSize modifies the window size.
+func WithWindowSize(windowSize time.Duration) ErrorOption {
+	return func(conf *errorSourceConfig) {
+		conf.windowSize = windowSize
+	}
+}
+
+// WithRepairingGracePeriod adds a grace period for when the health check is coming from a long period with no events.
+// When an error is submitted, if there have been no errors in the past window,
+// a repairing deadline is set repairingGracePeriod into the future.
+// All errors before that deadline are "downgraded" to "repairing errors".
+// If a window only contains repairing errors, error health checks are converted to repairing health checks.
+// This always happens the health check is first set up.
+func WithRepairingGracePeriod(repairingGracePeriod time.Duration) ErrorOption {
+	return func(conf *errorSourceConfig) {
+		conf.repairingGracePeriod = repairingGracePeriod
+	}
+}
+
+// WithRequireFullWindow adds a grace period for when the health check has just been initialized.
+// A repairing deadline is set one window into the future.
+// All errors before that deadline are "downgraded" to "repairing errors".
+// If a window only contains repairing errors, error health checks are converted to repairing health checks.
+func WithRequireFullWindow() ErrorOption {
+	return func(conf *errorSourceConfig) {
+		conf.requireFirstFullWindow = true
+	}
+}
+
+// WithTimeProvider overrides the function used for fetching the current time.
+// It is useful writing time sensitive tests without having to actually wait.
+func WithTimeProvider(timeProvider TimeProvider) ErrorOption {
+	return func(conf *errorSourceConfig) {
+		conf.timeProvider = timeProvider
+	}
+}

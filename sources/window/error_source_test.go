@@ -66,7 +66,10 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			source, err := NewUnhealthyIfAtLeastOneErrorSource(testCheckType, time.Hour)
+			timeProvider := &offsetTimeProvider{}
+			source, err := NewErrorHealthCheckSource(testCheckType, UnhealthyIfAtLeastOneError,
+				WithWindowSize(time.Hour),
+				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
 
 			for _, err := range testCase.errors {
@@ -127,7 +130,9 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
-			source, err := newHealthyIfNotAllErrorsSource(testCheckType, time.Hour, 0, false, timeProvider)
+			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+				WithWindowSize(time.Hour),
+				WithTimeProvider(timeProvider))
 
 			require.NoError(t, err)
 			for _, err := range testCase.errors {
@@ -146,121 +151,144 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 
 // TestHealthyIfNotAllErrorsSource_ErrorInInitialWindowWhenFirstFullWindowRequired validates that error in the first window
 // causes the check to report as repairing when first window is required.
-func TestHealthyIfNotAllErrorsSource_ErrorInInitialWindowWhenFirstFullWindowRequired(t *testing.T) {
+func TestHealthyIfNotAllErrorsSource_RequireFullWindow_ErrorInInitialWindow(t *testing.T) {
 	timeProvider := &offsetTimeProvider{}
-	anchoredWindow, err := newHealthyIfNotAllErrorsSource(testCheckType, windowSize, 0, true, timeProvider)
+	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(windowSize),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
-	healthStatus := anchoredWindow.HealthStatus(context.Background())
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 }
 
-// TestAnchoredHealthyIfNotAllErrorsSource_ErrorInInitialAnchoredWindow validates that error in the first window
+// TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_ErrorInInitialAnchoredWindow validates that error in the first window
 // does not cause the health status to become unhealthy when anchored as well.
-func TestAnchoredHealthyIfNotAllErrorsSource_ErrorInInitialAnchoredWindow(t *testing.T) {
+func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_ErrorInInitialAnchoredWindow(t *testing.T) {
 	timeProvider := &offsetTimeProvider{}
-	anchoredWindow, err := newHealthyIfNotAllErrorsSource(testCheckType, windowSize, windowSize, false, timeProvider)
+	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(windowSize),
+		WithRepairingGracePeriod(windowSize),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
-	healthStatus := anchoredWindow.HealthStatus(context.Background())
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 }
 
-// TestAnchoredHealthyIfNotAllErrorsSource_GapThenRepairing validates that error in the first window
+// TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairing validates that error in the first window
 // does not cause the health status to become unhealthy when anchored as well.
-func TestAnchoredHealthyIfNotAllErrorsSource_GapThenRepairing(t *testing.T) {
+func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairing(t *testing.T) {
 	timeProvider := &offsetTimeProvider{}
-	anchoredWindow, err := newHealthyIfNotAllErrorsSource(testCheckType, windowSize, windowSize, true, timeProvider)
+	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(windowSize),
+		WithRepairingGracePeriod(windowSize),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
 	timeProvider.RestlessSleep(2 * windowSize)
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 2)
 
-	healthStatus := anchoredWindow.HealthStatus(context.Background())
+	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 }
 
-// TestAnchoredHealthyIfNotAllErrorsSource_GapThenRepairingThenError validates that in a constant stream of errors, the health
+// TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenError validates that in a constant stream of errors, the health
 // check initially reports repairing and then reports error after the time window.
-func TestAnchoredHealthyIfNotAllErrorsSource_GapThenRepairingThenError(t *testing.T) {
+func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenError(t *testing.T) {
 	timeProvider := &offsetTimeProvider{}
-	anchoredWindow, err := newHealthyIfNotAllErrorsSource(testCheckType, windowSize, windowSize, true, timeProvider)
+	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(windowSize),
+		WithRepairingGracePeriod(windowSize),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
 	timeProvider.RestlessSleep(2 * windowSize)
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 2)
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
 
-	healthStatus := anchoredWindow.HealthStatus(context.Background())
+	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 
 	timeProvider.RestlessSleep(windowSize / 2)
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
 
-	healthStatus = anchoredWindow.HealthStatus(context.Background())
+	healthStatus = source.HealthStatus(context.Background())
 	checkResult, ok = healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_ERROR, checkResult.State.Value())
 }
 
-// TestAnchoredHealthyIfNotAllErrorsSource_GapThenRepairingThenHealthy validates that if a success is submitted during repairing phase,
+// TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenHealthy validates that if a success is submitted during repairing phase,
 // the health check recovers.
-func TestAnchoredHealthyIfNotAllErrorsSource_GapThenRepairingThenHealthy(t *testing.T) {
+func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenHealthy(t *testing.T) {
 	timeProvider := &offsetTimeProvider{}
-	anchoredWindow, err := newHealthyIfNotAllErrorsSource(testCheckType, windowSize, windowSize, true, timeProvider)
+	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(windowSize),
+		WithRepairingGracePeriod(windowSize),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
 	timeProvider.RestlessSleep(2 * windowSize)
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 2)
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
 
-	healthStatus := anchoredWindow.HealthStatus(context.Background())
+	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 
 	timeProvider.RestlessSleep(windowSize / 2)
-	anchoredWindow.Submit(nil)
+	source.Submit(nil)
 
-	healthStatus = anchoredWindow.HealthStatus(context.Background())
+	healthStatus = source.HealthStatus(context.Background())
 	checkResult, ok = healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_HEALTHY, checkResult.State.Value())
 }
 
-// TestAnchoredHealthyIfNotAllErrorsSource_RepairingThenGap validates if no more errors happen beyond the repairing phase,
+// TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_RepairingThenGap validates if no more errors happen beyond the repairing phase,
 // the health check recovers.
-func TestAnchoredHealthyIfNotAllErrorsSource_RepairingThenGap(t *testing.T) {
+func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_RepairingThenGap(t *testing.T) {
 	timeProvider := &offsetTimeProvider{}
-	anchoredWindow, err := newHealthyIfNotAllErrorsSource(testCheckType, windowSize, windowSize, true, timeProvider)
+	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(windowSize),
+		WithRepairingGracePeriod(windowSize),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
 	timeProvider.RestlessSleep(2 * windowSize)
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 2)
-	anchoredWindow.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
 
-	healthStatus := anchoredWindow.HealthStatus(context.Background())
+	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 
 	timeProvider.RestlessSleep(3 * windowSize / 2)
 
-	healthStatus = anchoredWindow.HealthStatus(context.Background())
+	healthStatus = source.HealthStatus(context.Background())
 	checkResult, ok = healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_HEALTHY, checkResult.State.Value())
