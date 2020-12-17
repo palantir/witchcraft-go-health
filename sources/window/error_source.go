@@ -159,10 +159,19 @@ func (e *errorHealthCheckSource) HealthStatus(ctx context.Context) health.Health
 }
 
 func (e *errorHealthCheckSource) getFailureResult() health.HealthCheckResult {
-	if e.lastErrorTime.Before(e.repairingDeadline) {
-		return sources.RepairingHealthCheckResult(e.checkType, e.lastError.Error(), sources.SafeParamsFromError(e.lastError))
+	params := map[string]interface{}{
+		"error": e.lastError.Error(),
 	}
-	return sources.UnhealthyHealthCheckResult(e.checkType, e.lastError.Error(), sources.SafeParamsFromError(e.lastError))
+	healthCheckResult := health.HealthCheckResult{
+		Type:    e.checkType,
+		State:   health.New_HealthState(health.HealthState_REPAIRING),
+		Message: &e.checkMessage,
+		Params:  params,
+	}
+	if !e.lastErrorTime.Before(e.repairingDeadline) {
+		healthCheckResult.State = health.New_HealthState(health.HealthState_ERROR)
+	}
+	return healthCheckResult
 }
 
 func (e *errorHealthCheckSource) hasSuccessInWindow() bool {
