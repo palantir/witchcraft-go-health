@@ -59,7 +59,7 @@ func defaultErrorSourceConfig(checkType health.CheckType) errorSourceConfig {
 	return errorSourceConfig{
 		checkType:              checkType,
 		windowSize:             defaultWindowSize,
-		checkMessage: "",
+		checkMessage:           "",
 		repairingGracePeriod:   defaultRepairingGracePeriod,
 		requireFirstFullWindow: false,
 		timeProvider:           NewOrdinaryTimeProvider(),

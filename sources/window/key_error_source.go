@@ -37,7 +37,7 @@ type KeyedErrorHealthCheckSource interface {
 }
 
 type keyedErrorHealthCheckSource struct {
-	errorMode            ErrorMode
+	errorMode               ErrorMode
 	windowSize              time.Duration
 	errorStore              TimedKeyStore
 	successStore            TimedKeyStore
@@ -84,7 +84,7 @@ func NewKeyedErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorM
 	}
 
 	source := &keyedErrorHealthCheckSource{
-		errorMode: errorMode,
+		errorMode:               errorMode,
 		windowSize:              conf.windowSize,
 		errorStore:              NewTimedKeyStore(conf.timeProvider),
 		successStore:            NewTimedKeyStore(conf.timeProvider),
