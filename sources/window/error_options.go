@@ -25,11 +25,17 @@ type ErrorMode string
 
 const (
 	// UnhealthyIfAtLeastOneError makes the error submitter based health
-	// check source return unhealthy if there are any errors in thw window.
+	// check source return unhealthy if there are any errors in the window.
+	// Returns healthy if there no submissions in the window.
 	UnhealthyIfAtLeastOneError ErrorMode = "UnhealthyIfAtLeastOneError"
 	// HealthyIfNotAllErrors makes the error submitter based health
-	// check source return unhealthy if there are only errors in thw window.
+	// check source return unhealthy if there are only errors in the window.
+	// Returns healthy if there no submissions in the window.
 	HealthyIfNotAllErrors ErrorMode = "HealthyIfNotAllErrors"
+	// HealthyIfNoRecentErrors makes the error submitter based health
+	// check source return unhealthy if the most recent submission is an error.
+	// Returns healthy if there no submissions in the window.
+	HealthyIfNoRecentErrors ErrorMode = "HealthyIfNoRecentErrors"
 )
 
 // ErrorOption is an option for an error submitter based window health check source.

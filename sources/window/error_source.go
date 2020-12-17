@@ -36,29 +36,6 @@ type ErrorHealthCheckSource interface {
 	status.HealthCheckSource
 }
 
-// MustNewErrorHealthCheckSource creates a new ErrorHealthCheckSource panicking in case of error.
-// Should only be used in instances where the inputs are statically defined and known to be valid.
-func MustNewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, options ...ErrorOption) ErrorHealthCheckSource {
-	source, err := NewErrorHealthCheckSource(checkType, errorMode, options...)
-	if err != nil {
-		panic(err)
-	}
-	return source
-}
-
-// NewErrorHealthCheckSource creates a new ErrorHealthCheckSource.
-func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, options ...ErrorOption) (ErrorHealthCheckSource, error) {
-	conf := defaultErrorSourceConfig(checkType, errorMode)
-	conf.apply(options...)
-
-	switch errorMode {
-	case UnhealthyIfAtLeastOneError, HealthyIfNotAllErrors:
-		return newErrorHealthCheckSource(conf)
-	default:
-		return nil, werror.Error("unknown or unsupported error mode", werror.SafeParam("errorMode", errorMode))
-	}
-}
-
 // errorHealthCheckSource is a HealthCheckSource that polls a TimeWindowedStore.
 // It returns, if there are only non-nil errors, the latest non-nil error as an unhealthy check.
 // If there are no items, returns healthy.
@@ -75,7 +52,30 @@ type errorHealthCheckSource struct {
 	repairingDeadline    time.Time
 }
 
-func newErrorHealthCheckSource(conf errorSourceConfig) (ErrorHealthCheckSource, error) {
+// MustNewErrorHealthCheckSource creates a new ErrorHealthCheckSource panicking in case of error.
+// Should only be used in instances where the inputs are statically defined and known to be valid.
+func MustNewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, options ...ErrorOption) ErrorHealthCheckSource {
+	source, err := NewErrorHealthCheckSource(checkType, errorMode, options...)
+	if err != nil {
+		panic(err)
+	}
+	return source
+}
+
+// NewErrorHealthCheckSource creates a new ErrorHealthCheckSource.
+func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, options ...ErrorOption) (ErrorHealthCheckSource, error) {
+	conf := defaultErrorSourceConfig(checkType, errorMode)
+	conf.apply(options...)
+
+	switch errorMode {
+	case UnhealthyIfAtLeastOneError,
+		HealthyIfNotAllErrors,
+		HealthyIfNoRecentErrors:
+	default:
+		return nil, werror.Error("unknown or unsupported error mode",
+			werror.SafeParam("errorMode", errorMode))
+	}
+
 	if conf.windowSize <= 0 {
 		return nil, werror.Error("windowSize must be positive",
 			werror.SafeParam("windowSize", conf.windowSize.String()))
@@ -130,16 +130,25 @@ func (e *errorHealthCheckSource) HealthStatus(ctx context.Context) health.Health
 	defer e.sourceMutex.RUnlock()
 
 	var healthCheckResult health.HealthCheckResult
-	if e.hasSuccessInWindow() && e.errorMode == HealthyIfNotAllErrors {
-		healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
-	} else if e.hasErrorInWindow() {
-		if e.lastErrorTime.Before(e.repairingDeadline) {
-			healthCheckResult = sources.RepairingHealthCheckResult(e.checkType, e.lastError.Error(), sources.SafeParamsFromError(e.lastError))
+	switch e.errorMode {
+	case HealthyIfNotAllErrors:
+		if e.hasSuccessInWindow() || !e.hasErrorInWindow() {
+			healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
 		} else {
-			healthCheckResult = sources.UnhealthyHealthCheckResult(e.checkType, e.lastError.Error(), sources.SafeParamsFromError(e.lastError))
+			healthCheckResult = e.getFailureResult()
 		}
-	} else {
-		healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
+	case UnhealthyIfAtLeastOneError:
+		if e.hasErrorInWindow() {
+			healthCheckResult = e.getFailureResult()
+		} else {
+			healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
+		}
+	case HealthyIfNoRecentErrors:
+		if e.lastErrorTime.After(e.lastSuccessTime) {
+			healthCheckResult = e.getFailureResult()
+		} else {
+			healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
+		}
 	}
 
 	return health.HealthStatus{
@@ -147,6 +156,13 @@ func (e *errorHealthCheckSource) HealthStatus(ctx context.Context) health.Health
 			e.checkType: healthCheckResult,
 		},
 	}
+}
+
+func (e *errorHealthCheckSource) getFailureResult() health.HealthCheckResult {
+	if e.lastErrorTime.Before(e.repairingDeadline) {
+		return sources.RepairingHealthCheckResult(e.checkType, e.lastError.Error(), sources.SafeParamsFromError(e.lastError))
+	}
+	return sources.UnhealthyHealthCheckResult(e.checkType, e.lastError.Error(), sources.SafeParamsFromError(e.lastError))
 }
 
 func (e *errorHealthCheckSource) hasSuccessInWindow() bool {

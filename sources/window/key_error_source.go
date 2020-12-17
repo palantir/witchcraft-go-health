@@ -268,7 +268,7 @@ func (m *multiKeyHealthyIfNotAllErrorsSource) Submit(key string, err error) {
 
 	m.errorStore.PruneOldKeys(m.windowSize)
 	m.successStore.PruneOldKeys(m.windowSize)
-	m.gapEndTimeStore.PruneOldKeys(m.repairingGracePeriod+m.windowSize)
+	m.gapEndTimeStore.PruneOldKeys(m.repairingGracePeriod + m.windowSize)
 
 	_, hasError := m.errorStore.Get(key)
 	_, hasSuccess := m.successStore.Get(key)
@@ -292,7 +292,7 @@ func (m *multiKeyHealthyIfNotAllErrorsSource) HealthStatus(ctx context.Context) 
 
 	m.errorStore.PruneOldKeys(m.windowSize)
 	m.successStore.PruneOldKeys(m.windowSize)
-	m.gapEndTimeStore.PruneOldKeys(m.repairingGracePeriod+m.windowSize)
+	m.gapEndTimeStore.PruneOldKeys(m.repairingGracePeriod + m.windowSize)
 
 	params := make(map[string]interface{})
 	shouldError := false

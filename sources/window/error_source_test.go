@@ -293,3 +293,67 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_RepairingThenGap(t *te
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_HEALTHY, checkResult.State.Value())
 }
+
+func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
+	for _, testCase := range []struct {
+		name          string
+		errors        []error
+		expectedCheck health.HealthCheckResult
+	}{
+		{
+			name:          "healthy when there are no items",
+			errors:        nil,
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+		{
+			name: "healthy when there are only nil items",
+			errors: []error{
+				nil,
+				nil,
+				nil,
+			},
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+		{
+			name: "healthy when latest submission is a nil err",
+			errors: []error{
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #2"),
+				nil,
+			},
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+		{
+			name: "healthy when latest submission is a non nil err",
+			errors: []error{
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
+			},
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2", map[string]interface{}{
+				"foo": "bar",
+			}),
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			timeProvider := &offsetTimeProvider{}
+			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNoRecentErrors,
+				WithWindowSize(time.Hour),
+				WithTimeProvider(timeProvider))
+
+			require.NoError(t, err)
+			for _, err := range testCase.errors {
+				source.Submit(err)
+			}
+			actualStatus := source.HealthStatus(context.Background())
+			expectedStatus := health.HealthStatus{
+				Checks: map[health.CheckType]health.HealthCheckResult{
+					testCheckType: testCase.expectedCheck,
+				},
+			}
+			assert.Equal(t, expectedStatus, actualStatus)
+		})
+	}
+}
