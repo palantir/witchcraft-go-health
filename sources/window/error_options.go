@@ -47,19 +47,19 @@ const (
 )
 
 type errorSourceConfig struct {
-	errorMode              ErrorMode
 	checkType              health.CheckType
 	windowSize             time.Duration
+	checkMessage string
 	repairingGracePeriod   time.Duration
 	requireFirstFullWindow bool
 	timeProvider           TimeProvider
 }
 
-func defaultErrorSourceConfig(checkType health.CheckType, errorMode ErrorMode) errorSourceConfig {
+func defaultErrorSourceConfig(checkType health.CheckType) errorSourceConfig {
 	return errorSourceConfig{
-		errorMode:              errorMode,
 		checkType:              checkType,
 		windowSize:             defaultWindowSize,
+		checkMessage: "",
 		repairingGracePeriod:   defaultRepairingGracePeriod,
 		requireFirstFullWindow: false,
 		timeProvider:           NewOrdinaryTimeProvider(),
@@ -76,6 +76,13 @@ func (e *errorSourceConfig) apply(options ...ErrorOption) {
 func WithWindowSize(windowSize time.Duration) ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.windowSize = windowSize
+	}
+}
+
+// WithCheckMessage adds a message to the health check source.
+func WithCheckMessage(checkMessage string) ErrorOption {
+	return func(conf *errorSourceConfig) {
+		conf.checkMessage = checkMessage
 	}
 }
 
