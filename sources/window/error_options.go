@@ -25,10 +25,10 @@ type ErrorMode string
 
 const (
 	// UnhealthyIfAtLeastOneError makes the error submitter based health
-	// check source return unhealthy if there are any errors in thw window.
+	// check source return unhealthy if there are any errors in the window.
 	UnhealthyIfAtLeastOneError ErrorMode = "UnhealthyIfAtLeastOneError"
 	// HealthyIfNotAllErrors makes the error submitter based health
-	// check source return unhealthy if there are only errors in thw window.
+	// check source return unhealthy if there are only errors in the window.
 	HealthyIfNotAllErrors ErrorMode = "HealthyIfNotAllErrors"
 )
 
@@ -44,6 +44,7 @@ type errorSourceConfig struct {
 	errorMode              ErrorMode
 	checkType              health.CheckType
 	windowSize             time.Duration
+	checkMessage           string
 	repairingGracePeriod   time.Duration
 	requireFirstFullWindow bool
 	timeProvider           TimeProvider
@@ -70,6 +71,13 @@ func (e *errorSourceConfig) apply(options ...ErrorOption) {
 func WithWindowSize(windowSize time.Duration) ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.windowSize = windowSize
+	}
+}
+
+// WithCheckMessage adds a message to the health check source.
+func WithCheckMessage(checkMessage string) ErrorOption {
+	return func(conf *errorSourceConfig) {
+		conf.checkMessage = checkMessage
 	}
 }
 
