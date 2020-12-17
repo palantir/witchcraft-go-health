@@ -138,7 +138,7 @@ func (m *multiKeyHealthyIfNoRecentErrorsSource) Submit(key string, err error) {
 	m.sourceMutex.Lock()
 	defer m.sourceMutex.Unlock()
 
-	m.errorStore.PruneOldKeys(m.windowSize, m.timeProvider)
+	m.errorStore.PruneOldKeys(m.windowSize)
 	m.errorStore.Put(key, err)
 }
 
@@ -147,7 +147,7 @@ func (m *multiKeyHealthyIfNoRecentErrorsSource) HealthStatus(ctx context.Context
 	m.sourceMutex.Lock()
 	defer m.sourceMutex.Unlock()
 
-	m.errorStore.PruneOldKeys(m.windowSize, m.timeProvider)
+	m.errorStore.PruneOldKeys(m.windowSize)
 
 	var healthCheckResult health.HealthCheckResult
 	params := make(map[string]interface{})
@@ -266,9 +266,9 @@ func (m *multiKeyHealthyIfNotAllErrorsSource) Submit(key string, err error) {
 	m.sourceMutex.Lock()
 	defer m.sourceMutex.Unlock()
 
-	m.errorStore.PruneOldKeys(m.windowSize, m.timeProvider)
-	m.successStore.PruneOldKeys(m.windowSize, m.timeProvider)
-	m.gapEndTimeStore.PruneOldKeys(m.repairingGracePeriod+m.windowSize, m.timeProvider)
+	m.errorStore.PruneOldKeys(m.windowSize)
+	m.successStore.PruneOldKeys(m.windowSize)
+	m.gapEndTimeStore.PruneOldKeys(m.repairingGracePeriod+m.windowSize)
 
 	_, hasError := m.errorStore.Get(key)
 	_, hasSuccess := m.successStore.Get(key)
@@ -290,9 +290,9 @@ func (m *multiKeyHealthyIfNotAllErrorsSource) HealthStatus(ctx context.Context) 
 
 	var healthCheckResult health.HealthCheckResult
 
-	m.errorStore.PruneOldKeys(m.windowSize, m.timeProvider)
-	m.successStore.PruneOldKeys(m.windowSize, m.timeProvider)
-	m.gapEndTimeStore.PruneOldKeys(m.repairingGracePeriod+m.windowSize, m.timeProvider)
+	m.errorStore.PruneOldKeys(m.windowSize)
+	m.successStore.PruneOldKeys(m.windowSize)
+	m.gapEndTimeStore.PruneOldKeys(m.repairingGracePeriod+m.windowSize)
 
 	params := make(map[string]interface{})
 	shouldError := false
