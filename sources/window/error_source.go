@@ -36,13 +36,11 @@ type ErrorHealthCheckSource interface {
 	status.HealthCheckSource
 }
 
-// errorHealthCheckSource is a HealthCheckSource that polls a TimeWindowedStore.
-// It returns, if there are only non-nil errors, the latest non-nil error as an unhealthy check.
-// If there are no items, returns healthy.
 type errorHealthCheckSource struct {
 	errorMode            ErrorMode
 	timeProvider         TimeProvider
 	windowSize           time.Duration
+	checkMessage         string
 	lastErrorTime        time.Time
 	lastError            error
 	lastSuccessTime      time.Time
@@ -89,6 +87,7 @@ func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, 
 		errorMode:            conf.errorMode,
 		timeProvider:         conf.timeProvider,
 		windowSize:           conf.windowSize,
+		checkMessage:         conf.checkMessage,
 		checkType:            conf.checkType,
 		repairingGracePeriod: conf.repairingGracePeriod,
 		repairingDeadline:    conf.timeProvider.Now(),
