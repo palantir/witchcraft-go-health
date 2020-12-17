@@ -173,7 +173,6 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_ErrorInInitialAnchored
 	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
 		WithWindowSize(windowSize),
 		WithRepairingGracePeriod(windowSize),
-		WithRequireFullWindow(),
 		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 

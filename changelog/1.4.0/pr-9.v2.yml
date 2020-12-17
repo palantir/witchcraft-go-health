@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Switch error health check sources to the functional options pattern
+  links:
+  - https://github.com/palantir/witchcraft-go-health/pull/9
