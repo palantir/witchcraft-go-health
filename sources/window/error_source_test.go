@@ -32,6 +32,7 @@ const (
 )
 
 func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
+	checkMessage := "found an error"
 	for _, testCase := range []struct {
 		name          string
 		errors        []error
@@ -60,7 +61,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 				nil,
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "", map[string]interface{}{
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
 				"error": "Error #2",
 			}),
 		},
@@ -69,6 +70,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
 			source, err := NewErrorHealthCheckSource(testCheckType, UnhealthyIfAtLeastOneError,
 				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
 				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
 
@@ -87,6 +89,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 }
 
 func TestHealthyIfNotAllErrorsSource(t *testing.T) {
+	checkMessage := "found an error"
 	for _, testCase := range []struct {
 		name          string
 		errors        []error
@@ -123,7 +126,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #1"),
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "", map[string]interface{}{
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
 				"error": "Error #2",
 			}),
 		},
@@ -132,6 +135,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
 			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
 				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
 				WithTimeProvider(timeProvider))
 
 			require.NoError(t, err)
@@ -295,6 +299,7 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_RepairingThenGap(t *te
 }
 
 func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
+	checkMessage := "found an error"
 	for _, testCase := range []struct {
 		name          string
 		errors        []error
@@ -332,8 +337,8 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 				nil,
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2", map[string]interface{}{
-				"foo": "bar",
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+				"error": "Error #2",
 			}),
 		},
 	} {
@@ -341,6 +346,7 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
 			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNoRecentErrors,
 				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
 				WithTimeProvider(timeProvider))
 
 			require.NoError(t, err)
