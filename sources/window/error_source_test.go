@@ -60,8 +60,8 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 				nil,
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2", map[string]interface{}{
-				"foo": "bar",
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "", map[string]interface{}{
+				"error": "Error #2",
 			}),
 		},
 	} {
@@ -123,8 +123,8 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #1"),
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "Error #2", map[string]interface{}{
-				"foo": "bar",
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "", map[string]interface{}{
+				"error": "Error #2",
 			}),
 		},
 	} {

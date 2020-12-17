@@ -49,7 +49,7 @@ const (
 type errorSourceConfig struct {
 	checkType              health.CheckType
 	windowSize             time.Duration
-	checkMessage string
+	checkMessage           string
 	repairingGracePeriod   time.Duration
 	requireFirstFullWindow bool
 	timeProvider           TimeProvider

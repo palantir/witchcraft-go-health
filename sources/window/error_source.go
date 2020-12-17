@@ -40,7 +40,7 @@ type errorHealthCheckSource struct {
 	errorMode            ErrorMode
 	timeProvider         TimeProvider
 	windowSize           time.Duration
-	checkMessage string
+	checkMessage         string
 	lastErrorTime        time.Time
 	lastError            error
 	lastSuccessTime      time.Time
@@ -87,7 +87,7 @@ func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, 
 		errorMode:            errorMode,
 		timeProvider:         conf.timeProvider,
 		windowSize:           conf.windowSize,
-		checkMessage: conf.checkMessage,
+		checkMessage:         conf.checkMessage,
 		checkType:            conf.checkType,
 		repairingGracePeriod: conf.repairingGracePeriod,
 		repairingDeadline:    conf.timeProvider.Now(),
