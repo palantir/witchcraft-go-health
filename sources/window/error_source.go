@@ -59,13 +59,11 @@ func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, 
 	}
 }
 
-// errorHealthCheckSource is a HealthCheckSource that polls a TimeWindowedStore.
-// It returns, if there are only non-nil errors, the latest non-nil error as an unhealthy check.
-// If there are no items, returns healthy.
 type errorHealthCheckSource struct {
 	errorMode            ErrorMode
 	timeProvider         TimeProvider
 	windowSize           time.Duration
+	checkMessage         string
 	lastErrorTime        time.Time
 	lastError            error
 	lastSuccessTime      time.Time
@@ -89,6 +87,7 @@ func newErrorHealthCheckSource(conf errorSourceConfig) (ErrorHealthCheckSource, 
 		errorMode:            conf.errorMode,
 		timeProvider:         conf.timeProvider,
 		windowSize:           conf.windowSize,
+		checkMessage:         conf.checkMessage,
 		checkType:            conf.checkType,
 		repairingGracePeriod: conf.repairingGracePeriod,
 		repairingDeadline:    conf.timeProvider.Now(),
@@ -133,11 +132,7 @@ func (e *errorHealthCheckSource) HealthStatus(ctx context.Context) health.Health
 	if e.hasSuccessInWindow() && e.errorMode == HealthyIfNotAllErrors {
 		healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
 	} else if e.hasErrorInWindow() {
-		if e.lastErrorTime.Before(e.repairingDeadline) {
-			healthCheckResult = sources.RepairingHealthCheckResult(e.checkType, e.lastError.Error(), sources.SafeParamsFromError(e.lastError))
-		} else {
-			healthCheckResult = sources.UnhealthyHealthCheckResult(e.checkType, e.lastError.Error(), sources.SafeParamsFromError(e.lastError))
-		}
+		healthCheckResult = e.getFailureResult()
 	} else {
 		healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
 	}
@@ -147,6 +142,22 @@ func (e *errorHealthCheckSource) HealthStatus(ctx context.Context) health.Health
 			e.checkType: healthCheckResult,
 		},
 	}
+}
+
+func (e *errorHealthCheckSource) getFailureResult() health.HealthCheckResult {
+	params := map[string]interface{}{
+		"error": e.lastError.Error(),
+	}
+	healthCheckResult := health.HealthCheckResult{
+		Type:    e.checkType,
+		State:   health.New_HealthState(health.HealthState_REPAIRING),
+		Message: &e.checkMessage,
+		Params:  params,
+	}
+	if !e.lastErrorTime.Before(e.repairingDeadline) {
+		healthCheckResult.State = health.New_HealthState(health.HealthState_ERROR)
+	}
+	return healthCheckResult
 }
 
 func (e *errorHealthCheckSource) hasSuccessInWindow() bool {
