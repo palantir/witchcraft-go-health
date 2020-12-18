@@ -59,8 +59,8 @@ type TimedKeyStore interface {
 	// The second return value returns whether or not such element exist.
 	Newest() (TimedKey, bool)
 	// PruneOldKeys removes any TimedKey from the list that was added longer than maxAge ago.
-	// DEPRECATED: the provided TimeProvider is no longer used. This method simply forwards to PruneKeysAboveAge.
-	PruneOldKeys(maxAge time.Duration, _ TimeProvider)
+	// DEPRECATED: please use PruneKeysAboveAge instead as it uses the internal timeProvider.
+	PruneOldKeys(maxAge time.Duration, timeProvider TimeProvider)
 	// PruneKeysAboveAge removes any TimedKey from the list that was added longer than maxAge ago.
 	PruneKeysAboveAge(maxAge time.Duration)
 }
@@ -99,12 +99,12 @@ func NewTimedKeyStore(timeProvider TimeProvider) TimedKeyStore {
 	}
 }
 
-func (t *timedKeyStore) PruneOldKeys(maxAge time.Duration, _ TimeProvider) {
-	t.PruneKeysAboveAge(maxAge)
+func (t *timedKeyStore) PruneKeysAboveAge(maxAge time.Duration) {
+	t.PruneOldKeys(maxAge, t.timeProvider)
 }
 
-func (t *timedKeyStore) PruneKeysAboveAge(maxAge time.Duration) {
-	curTime := t.timeProvider.Now()
+func (t *timedKeyStore) PruneOldKeys(maxAge time.Duration, timeProvider TimeProvider) {
+	curTime := timeProvider.Now()
 	for {
 		oldest, exists := t.Oldest()
 		if !exists {
