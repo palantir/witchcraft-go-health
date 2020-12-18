@@ -58,8 +58,11 @@ type TimedKeyStore interface {
 	// Newest returns the stored TimedKey with the newest timestamp if it exists. Returns empty struct otherwise.
 	// The second return value returns whether or not such element exist.
 	Newest() (TimedKey, bool)
-	// PruneOldKeys removes any TimedKey from the list that was added longer than maxAge ago
+	// PruneOldKeys removes any TimedKey from the list that was added longer than maxAge ago.
+	// DEPRECATED: please use PruneKeysAboveAge instead as it uses the internal timeProvider.
 	PruneOldKeys(maxAge time.Duration, timeProvider TimeProvider)
+	// PruneKeysAboveAge removes any TimedKey from the list that was added longer than maxAge ago.
+	PruneKeysAboveAge(maxAge time.Duration)
 }
 
 // keyNode is a node in double linked list that holds a TimedKey.
@@ -94,6 +97,10 @@ func NewTimedKeyStore(timeProvider TimeProvider) TimedKeyStore {
 		nodeByKey:    make(map[string]*keyNode),
 		timeProvider: timeProvider,
 	}
+}
+
+func (t *timedKeyStore) PruneKeysAboveAge(maxAge time.Duration) {
+	t.PruneOldKeys(maxAge, t.timeProvider)
 }
 
 func (t *timedKeyStore) PruneOldKeys(maxAge time.Duration, timeProvider TimeProvider) {
