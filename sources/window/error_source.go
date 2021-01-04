@@ -62,7 +62,7 @@ func MustNewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMo
 
 // NewErrorHealthCheckSource creates a new ErrorHealthCheckSource.
 func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, options ...ErrorOption) (ErrorHealthCheckSource, error) {
-	conf := defaultErrorSourceConfig(checkType, errorMode)
+	conf := defaultErrorSourceConfig(checkType)
 	conf.apply(options...)
 
 	switch errorMode {
@@ -84,7 +84,7 @@ func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, 
 	}
 
 	source := &errorHealthCheckSource{
-		errorMode:            conf.errorMode,
+		errorMode:            errorMode,
 		timeProvider:         conf.timeProvider,
 		windowSize:           conf.windowSize,
 		checkMessage:         conf.checkMessage,

@@ -47,7 +47,6 @@ const (
 )
 
 type errorSourceConfig struct {
-	errorMode              ErrorMode
 	checkType              health.CheckType
 	windowSize             time.Duration
 	checkMessage           string
@@ -56,11 +55,11 @@ type errorSourceConfig struct {
 	timeProvider           TimeProvider
 }
 
-func defaultErrorSourceConfig(checkType health.CheckType, errorMode ErrorMode) errorSourceConfig {
+func defaultErrorSourceConfig(checkType health.CheckType) errorSourceConfig {
 	return errorSourceConfig{
-		errorMode:              errorMode,
 		checkType:              checkType,
 		windowSize:             defaultWindowSize,
+		checkMessage:           "",
 		repairingGracePeriod:   defaultRepairingGracePeriod,
 		requireFirstFullWindow: false,
 		timeProvider:           NewOrdinaryTimeProvider(),

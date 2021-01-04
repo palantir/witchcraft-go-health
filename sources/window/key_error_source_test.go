@@ -31,8 +31,8 @@ type keyErrorPair struct {
 	err error
 }
 
-func TestMultiKeyUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
-	messageInCaseOfError := "message in case of error"
+func TestKeyedUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
+	checkMessage := "message in case of error"
 	for _, testCase := range []struct {
 		name          string
 		keyErrorPairs []keyErrorPair
@@ -66,7 +66,7 @@ func TestMultiKeyUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "Error #1 for key 1",
 					"2": "Error #1 for key 2",
@@ -84,7 +84,7 @@ func TestMultiKeyUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
@@ -94,7 +94,9 @@ func TestMultiKeyUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
-			source, err := NewMultiKeyUnhealthyIfAtLeastOneErrorSource(testCheckType, messageInCaseOfError, time.Hour)
+			source, err := NewKeyedErrorHealthCheckSource(testCheckType, UnhealthyIfAtLeastOneError,
+				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage))
 			require.NoError(t, err)
 			for _, keyErrorPair := range testCase.keyErrorPairs {
 				source.Submit(keyErrorPair.key, keyErrorPair.err)
@@ -110,8 +112,8 @@ func TestMultiKeyUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 	}
 }
 
-func TestMultiKeyHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
-	messageInCaseOfError := "message in case of error"
+func TestKeyedHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
+	checkMessage := "message in case of error"
 	for _, testCase := range []struct {
 		name          string
 		keyErrorPairs []keyErrorPair
@@ -158,7 +160,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
@@ -176,7 +178,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
@@ -187,7 +189,11 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
-			source, err := newMultiKeyHealthyIfNotAllErrorsSource(testCheckType, messageInCaseOfError, time.Hour, 0, true, timeProvider)
+			source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
+				WithRequireFullWindow(),
+				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
 
 			// sleep puts all tests outside the required healthy start window
@@ -207,8 +213,8 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 	}
 }
 
-func TestMultiKeyHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
-	messageInCaseOfError := "message in case of error"
+func TestKeyedHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
+	checkMessage := "message in case of error"
 	for _, testCase := range []struct {
 		name          string
 		keyErrorPairs []keyErrorPair
@@ -240,7 +246,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
@@ -258,7 +264,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
@@ -269,7 +275,11 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
-			source, err := newMultiKeyHealthyIfNotAllErrorsSource(testCheckType, messageInCaseOfError, time.Hour, 0, true, timeProvider)
+			source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
+				WithRequireFullWindow(),
+				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
 
 			for _, keyErrorPair := range testCase.keyErrorPairs {
@@ -286,13 +296,17 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
 	}
 }
 
-func TestMultiKeyHealthyIfNotAllErrorsSource_InitialWindowErrorsReturnRepairing(t *testing.T) {
+func TestKeyedHealthyIfNotAllErrorsSource_InitialWindowErrorsReturnRepairing(t *testing.T) {
 	ctx := context.Background()
-	messageInCaseOfError := "message in case of error"
+	checkMessage := "message in case of error"
 	const timeWindow = time.Minute
 
 	timeProvider := &offsetTimeProvider{}
-	source, err := newMultiKeyHealthyIfNotAllErrorsSource(testCheckType, messageInCaseOfError, timeWindow, 0, true, timeProvider)
+	source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(timeWindow),
+		WithCheckMessage(checkMessage),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	require.NoError(t, err)
 
 	// move partially into the initial health check window
@@ -304,7 +318,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_InitialWindowErrorsReturnRepairing(
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 				},
@@ -320,7 +334,7 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_InitialWindowErrorsReturnRepairing(
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 				},
@@ -329,13 +343,18 @@ func TestMultiKeyHealthyIfNotAllErrorsSource_InitialWindowErrorsReturnRepairing(
 	}, source.HealthStatus(ctx))
 }
 
-func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenHealthy(t *testing.T) {
+func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenHealthy(t *testing.T) {
 	ctx := context.Background()
-	messageInCaseOfError := "message in case of error"
+	checkMessage := "message in case of error"
 	const timeWindow = time.Minute
 
 	timeProvider := &offsetTimeProvider{}
-	source, err := newMultiKeyHealthyIfNotAllErrorsSource(testCheckType, messageInCaseOfError, timeWindow, timeWindow, true, timeProvider)
+	source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(timeWindow),
+		WithCheckMessage(checkMessage),
+		WithRepairingGracePeriod(timeWindow),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	require.NoError(t, err)
 
 	// move out of the initial health check window
@@ -349,7 +368,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenHealthy
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 				},
@@ -365,7 +384,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenHealthy
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
@@ -381,7 +400,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenHealthy
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"2": "error for key: 2",
 				},
@@ -398,13 +417,18 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenHealthy
 	}, source.HealthStatus(ctx))
 }
 
-func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenGap(t *testing.T) {
+func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenGap(t *testing.T) {
 	ctx := context.Background()
-	messageInCaseOfError := "message in case of error"
+	checkMessage := "message in case of error"
 	const timeWindow = time.Minute
 
 	timeProvider := &offsetTimeProvider{}
-	source, err := newMultiKeyHealthyIfNotAllErrorsSource(testCheckType, messageInCaseOfError, timeWindow, timeWindow, true, timeProvider)
+	source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(timeWindow),
+		WithCheckMessage(checkMessage),
+		WithRepairingGracePeriod(timeWindow),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	require.NoError(t, err)
 
 	// move out of the initial health check window
@@ -418,7 +442,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenGap(t *
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 				},
@@ -433,7 +457,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenGap(t *
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
@@ -449,7 +473,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenGap(t *
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"2": "error for key: 2",
 				},
@@ -466,13 +490,18 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenGap(t *
 	}, source.HealthStatus(ctx))
 }
 
-func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenError(t *testing.T) {
+func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenError(t *testing.T) {
 	ctx := context.Background()
-	messageInCaseOfError := "message in case of error"
+	checkMessage := "message in case of error"
 	const timeWindow = time.Minute
 
 	timeProvider := &offsetTimeProvider{}
-	source, err := newMultiKeyHealthyIfNotAllErrorsSource(testCheckType, messageInCaseOfError, timeWindow, timeWindow, true, timeProvider)
+	source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(timeWindow),
+		WithCheckMessage(checkMessage),
+		WithRepairingGracePeriod(timeWindow),
+		WithRequireFullWindow(),
+		WithTimeProvider(timeProvider))
 	require.NoError(t, err)
 
 	// move out of the initial health check window
@@ -486,7 +515,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenError(t
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 				},
@@ -502,7 +531,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenError(t
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
@@ -520,7 +549,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenError(t
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
@@ -536,7 +565,7 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenError(t
 			testCheckType: {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "error for key: 1",
 				},
@@ -545,8 +574,8 @@ func TestAnchoredMultiKeyHealthyIfNotAllErrorsSource_GapThenRepairingThenError(t
 	}, source.HealthStatus(ctx))
 }
 
-func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
-	messageInCaseOfError := "message in case of error"
+func TestKeyedUnhealthyIfNoRecentErrorsSource(t *testing.T) {
+	checkMessage := "message in case of error"
 	for _, testCase := range []struct {
 		name                     string
 		keyErrorPairs            []keyErrorPair
@@ -580,7 +609,7 @@ func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"2": "Error #1 for key 2",
 				},
@@ -603,7 +632,7 @@ func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "Error #2 for key 1",
 				},
@@ -632,7 +661,7 @@ func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 			expectedCheck: health.HealthCheckResult{
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
-				Message: &messageInCaseOfError,
+				Message: &checkMessage,
 				Params: map[string]interface{}{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
@@ -643,7 +672,10 @@ func TestMultiKeyUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
-			source, err := newMultiKeyHealthyIfNoRecentErrorsSource(testCheckType, messageInCaseOfError, time.Minute, timeProvider)
+			source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNoRecentErrors,
+				WithWindowSize(time.Minute),
+				WithCheckMessage(checkMessage),
+				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
 			for _, keyErrorPair := range testCase.keyErrorPairs {
 				source.Submit(keyErrorPair.key, keyErrorPair.err)
