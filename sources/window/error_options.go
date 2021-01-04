@@ -73,6 +73,7 @@ func (e *errorSourceConfig) apply(options ...ErrorOption) {
 }
 
 // WithWindowSize modifies the window size.
+// If not set, the default window size of 10 min is used.
 func WithWindowSize(windowSize time.Duration) ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.windowSize = windowSize
@@ -80,6 +81,7 @@ func WithWindowSize(windowSize time.Duration) ErrorOption {
 }
 
 // WithCheckMessage adds a message to the health check source.
+// If not set, an empty message is used.
 func WithCheckMessage(checkMessage string) ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.checkMessage = checkMessage
@@ -92,6 +94,7 @@ func WithCheckMessage(checkMessage string) ErrorOption {
 // All errors before that deadline are "downgraded" to "repairing errors".
 // If a window only contains repairing errors, error health checks are converted to repairing health checks.
 // This always happens the health check is first set up.
+// If not set, no grace period is used.
 func WithRepairingGracePeriod(repairingGracePeriod time.Duration) ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.repairingGracePeriod = repairingGracePeriod
@@ -102,6 +105,7 @@ func WithRepairingGracePeriod(repairingGracePeriod time.Duration) ErrorOption {
 // A repairing deadline is set one window into the future.
 // All errors before that deadline are "downgraded" to "repairing errors".
 // If a window only contains repairing errors, error health checks are converted to repairing health checks.
+// If not set, early errors might cause the health check to become unhealthy.
 func WithRequireFullWindow() ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.requireFirstFullWindow = true
@@ -109,7 +113,8 @@ func WithRequireFullWindow() ErrorOption {
 }
 
 // WithTimeProvider overrides the function used for fetching the current time.
-// It is useful writing time sensitive tests without having to actually wait.
+// It is useful for writing time sensitive tests without having to actually wait.
+// If not set, the default provider that returns time.Now() is used.
 func WithTimeProvider(timeProvider TimeProvider) ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.timeProvider = timeProvider

@@ -108,9 +108,9 @@ func (k *keyedErrorHealthCheckSource) Submit(key string, err error) {
 	k.sourceMutex.Lock()
 	defer k.sourceMutex.Unlock()
 
-	k.errorStore.PruneOldKeys(k.windowSize)
-	k.successStore.PruneOldKeys(k.windowSize)
-	k.gapEndTimeStore.PruneOldKeys(k.repairingGracePeriod + k.windowSize)
+	k.errorStore.PruneKeysAboveAge(k.windowSize)
+	k.successStore.PruneKeysAboveAge(k.windowSize)
+	k.gapEndTimeStore.PruneKeysAboveAge(k.repairingGracePeriod + k.windowSize)
 
 	_, hasError := k.errorStore.Get(key)
 	_, hasSuccess := k.successStore.Get(key)
@@ -132,9 +132,9 @@ func (k *keyedErrorHealthCheckSource) HealthStatus(ctx context.Context) health.H
 
 	var healthCheckResult health.HealthCheckResult
 
-	k.errorStore.PruneOldKeys(k.windowSize)
-	k.successStore.PruneOldKeys(k.windowSize)
-	k.gapEndTimeStore.PruneOldKeys(k.repairingGracePeriod + k.windowSize)
+	k.errorStore.PruneKeysAboveAge(k.windowSize)
+	k.successStore.PruneKeysAboveAge(k.windowSize)
+	k.gapEndTimeStore.PruneKeysAboveAge(k.repairingGracePeriod + k.windowSize)
 
 	params := make(map[string]interface{})
 	shouldError := false

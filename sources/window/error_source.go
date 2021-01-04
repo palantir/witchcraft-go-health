@@ -50,7 +50,7 @@ type errorHealthCheckSource struct {
 	repairingDeadline    time.Time
 }
 
-// MustNewErrorHealthCheckSource creates a new ErrorHealthCheckSource panicking in case of error.
+// MustNewErrorHealthCheckSource creates a new ErrorHealthCheckSource which will panic if any error is encountered.
 // Should only be used in instances where the inputs are statically defined and known to be valid.
 func MustNewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, options ...ErrorOption) ErrorHealthCheckSource {
 	source, err := NewErrorHealthCheckSource(checkType, errorMode, options...)
