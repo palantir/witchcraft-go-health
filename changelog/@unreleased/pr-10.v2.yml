@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Make TimedKeyStore's PruneOldKeys method use the internal time provider
+  links:
+  - https://github.com/palantir/witchcraft-go-health/pull/10
