@@ -32,6 +32,7 @@ const (
 )
 
 func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
+	checkMessage := "found an error"
 	for _, testCase := range []struct {
 		name          string
 		errors        []error
@@ -60,7 +61,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 				nil,
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "", map[string]interface{}{
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
 				"error": "Error #2",
 			}),
 		},
@@ -69,6 +70,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
 			source, err := NewErrorHealthCheckSource(testCheckType, UnhealthyIfAtLeastOneError,
 				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
 				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
 
@@ -87,6 +89,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 }
 
 func TestHealthyIfNotAllErrorsSource(t *testing.T) {
+	checkMessage := "found an error"
 	for _, testCase := range []struct {
 		name          string
 		errors        []error
@@ -123,7 +126,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #1"),
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, "", map[string]interface{}{
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
 				"error": "Error #2",
 			}),
 		},
@@ -132,6 +135,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
 			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
 				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
 				WithTimeProvider(timeProvider))
 
 			require.NoError(t, err)
@@ -291,4 +295,70 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_RepairingThenGap(t *te
 	checkResult, ok = healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_HEALTHY, checkResult.State.Value())
+}
+
+func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
+	checkMessage := "found an error"
+	for _, testCase := range []struct {
+		name          string
+		errors        []error
+		expectedCheck health.HealthCheckResult
+	}{
+		{
+			name:          "healthy when there are no items",
+			errors:        nil,
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+		{
+			name: "healthy when there are only nil items",
+			errors: []error{
+				nil,
+				nil,
+				nil,
+			},
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+		{
+			name: "healthy when latest submission is a nil err",
+			errors: []error{
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #2"),
+				nil,
+			},
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+		{
+			name: "healthy when latest submission is a non nil err",
+			errors: []error{
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
+			},
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+				"error": "Error #2",
+			}),
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			timeProvider := &offsetTimeProvider{}
+			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNoRecentErrors,
+				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
+				WithTimeProvider(timeProvider))
+
+			require.NoError(t, err)
+			for _, err := range testCase.errors {
+				source.Submit(err)
+			}
+			actualStatus := source.HealthStatus(context.Background())
+			expectedStatus := health.HealthStatus{
+				Checks: map[health.CheckType]health.HealthCheckResult{
+					testCheckType: testCase.expectedCheck,
+				},
+			}
+			assert.Equal(t, expectedStatus, actualStatus)
+		})
+	}
 }

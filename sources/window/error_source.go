@@ -36,6 +36,20 @@ type ErrorHealthCheckSource interface {
 	status.HealthCheckSource
 }
 
+type errorHealthCheckSource struct {
+	errorMode            ErrorMode
+	timeProvider         TimeProvider
+	windowSize           time.Duration
+	checkMessage         string
+	lastErrorTime        time.Time
+	lastError            error
+	lastSuccessTime      time.Time
+	sourceMutex          sync.RWMutex
+	checkType            health.CheckType
+	repairingGracePeriod time.Duration
+	repairingDeadline    time.Time
+}
+
 // MustNewErrorHealthCheckSource creates a new ErrorHealthCheckSource which will panic if any error is encountered.
 // Should only be used in instances where the inputs are statically defined and known to be valid.
 func MustNewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, options ...ErrorOption) ErrorHealthCheckSource {
@@ -52,28 +66,14 @@ func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, 
 	conf.apply(options...)
 
 	switch errorMode {
-	case UnhealthyIfAtLeastOneError, HealthyIfNotAllErrors:
-		return newErrorHealthCheckSource(conf)
+	case UnhealthyIfAtLeastOneError,
+		HealthyIfNotAllErrors,
+		HealthyIfNoRecentErrors:
 	default:
-		return nil, werror.Error("unknown or unsupported error mode", werror.SafeParam("errorMode", errorMode))
+		return nil, werror.Error("unknown or unsupported error mode",
+			werror.SafeParam("errorMode", errorMode))
 	}
-}
 
-type errorHealthCheckSource struct {
-	errorMode            ErrorMode
-	timeProvider         TimeProvider
-	windowSize           time.Duration
-	checkMessage         string
-	lastErrorTime        time.Time
-	lastError            error
-	lastSuccessTime      time.Time
-	sourceMutex          sync.RWMutex
-	checkType            health.CheckType
-	repairingGracePeriod time.Duration
-	repairingDeadline    time.Time
-}
-
-func newErrorHealthCheckSource(conf errorSourceConfig) (ErrorHealthCheckSource, error) {
 	if conf.windowSize <= 0 {
 		return nil, werror.Error("windowSize must be positive",
 			werror.SafeParam("windowSize", conf.windowSize.String()))
@@ -129,12 +129,25 @@ func (e *errorHealthCheckSource) HealthStatus(ctx context.Context) health.Health
 	defer e.sourceMutex.RUnlock()
 
 	var healthCheckResult health.HealthCheckResult
-	if e.hasSuccessInWindow() && e.errorMode == HealthyIfNotAllErrors {
-		healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
-	} else if e.hasErrorInWindow() {
-		healthCheckResult = e.getFailureResult()
-	} else {
-		healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
+	switch e.errorMode {
+	case HealthyIfNotAllErrors:
+		if e.hasSuccessInWindow() || !e.hasErrorInWindow() {
+			healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
+		} else {
+			healthCheckResult = e.getFailureResult()
+		}
+	case UnhealthyIfAtLeastOneError:
+		if e.hasErrorInWindow() {
+			healthCheckResult = e.getFailureResult()
+		} else {
+			healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
+		}
+	case HealthyIfNoRecentErrors:
+		if e.lastErrorTime.After(e.lastSuccessTime) {
+			healthCheckResult = e.getFailureResult()
+		} else {
+			healthCheckResult = sources.HealthyHealthCheckResult(e.checkType)
+		}
 	}
 
 	return health.HealthStatus{
