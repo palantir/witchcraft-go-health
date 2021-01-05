@@ -52,6 +52,7 @@ type errorSourceConfig struct {
 	checkMessage           string
 	repairingGracePeriod   time.Duration
 	requireFirstFullWindow bool
+	maxErrorAge            time.Duration
 	timeProvider           TimeProvider
 }
 
@@ -62,6 +63,7 @@ func defaultErrorSourceConfig(checkType health.CheckType) errorSourceConfig {
 		checkMessage:           "",
 		repairingGracePeriod:   defaultRepairingGracePeriod,
 		requireFirstFullWindow: false,
+		maxErrorAge:            0,
 		timeProvider:           NewOrdinaryTimeProvider(),
 	}
 }
@@ -93,7 +95,7 @@ func WithCheckMessage(checkMessage string) ErrorOption {
 // a repairing deadline is set repairingGracePeriod into the future.
 // All errors before that deadline are "downgraded" to "repairing errors".
 // If a window only contains repairing errors, error health checks are converted to repairing health checks.
-// This always happens the health check is first set up.
+// This always happens when the health check is first set up.
 // If not set, no grace period is used.
 func WithRepairingGracePeriod(repairingGracePeriod time.Duration) ErrorOption {
 	return func(conf *errorSourceConfig) {
@@ -109,6 +111,16 @@ func WithRepairingGracePeriod(repairingGracePeriod time.Duration) ErrorOption {
 func WithRequireFullWindow() ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.requireFirstFullWindow = true
+	}
+}
+
+// WithMaximumErrorAge sets the maximum age an error can have to make the health check become unhealthy.
+// If the latest error happened more than the maximum age ago, error checks are converted to repairing checks.
+// A maximum error age of zero is treated as infinity (no maximum error age).
+// If not set, a non-nil error that has just been submitted can cause the health check to become unhealthy.
+func WithMaximumErrorAge(maxErrorAge time.Duration) ErrorOption {
+	return func(conf *errorSourceConfig) {
+		conf.maxErrorAge = maxErrorAge
 	}
 }
 

@@ -574,6 +574,82 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 	}, source.HealthStatus(ctx))
 }
 
+func TestKeyedHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
+	ctx := context.Background()
+	checkMessage := "message in case of error"
+	const timeWindow = time.Minute
+
+	timeProvider := &offsetTimeProvider{}
+	source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(timeWindow),
+		WithCheckMessage(checkMessage),
+		WithMaximumErrorAge(timeWindow/2),
+		WithTimeProvider(timeProvider))
+	require.NoError(t, err)
+
+	source.Submit("1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
+	timeProvider.RestlessSleep(timeWindow / 4)
+
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			testCheckType: {
+				Type:    testCheckType,
+				State:   health.New_HealthState(health.HealthState_ERROR),
+				Message: &checkMessage,
+				Params: map[string]interface{}{
+					"1": "error for key: 1",
+				},
+			},
+		},
+	}, source.HealthStatus(ctx))
+
+	timeProvider.RestlessSleep(timeWindow / 2)
+
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			testCheckType: {
+				Type:    testCheckType,
+				State:   health.New_HealthState(health.HealthState_REPAIRING),
+				Message: &checkMessage,
+				Params: map[string]interface{}{
+					"1": "error for key: 1",
+				},
+			},
+		},
+	}, source.HealthStatus(ctx))
+
+	source.Submit("2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
+
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			testCheckType: {
+				Type:    testCheckType,
+				State:   health.New_HealthState(health.HealthState_ERROR),
+				Message: &checkMessage,
+				Params: map[string]interface{}{
+					"1": "error for key: 1",
+					"2": "error for key: 2",
+				},
+			},
+		},
+	}, source.HealthStatus(ctx))
+
+	timeProvider.RestlessSleep(timeWindow / 2)
+
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			testCheckType: {
+				Type:    testCheckType,
+				State:   health.New_HealthState(health.HealthState_REPAIRING),
+				Message: &checkMessage,
+				Params: map[string]interface{}{
+					"2": "error for key: 2",
+				},
+			},
+		},
+	}, source.HealthStatus(ctx))
+}
+
 func TestKeyedUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 	checkMessage := "message in case of error"
 	for _, testCase := range []struct {

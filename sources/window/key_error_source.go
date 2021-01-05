@@ -43,6 +43,7 @@ type keyedErrorHealthCheckSource struct {
 	successStore            TimedKeyStore
 	gapEndTimeStore         TimedKeyStore
 	repairingGracePeriod    time.Duration
+	maxErrorAge             time.Duration
 	globalRepairingDeadline time.Time
 	sourceMutex             sync.Mutex
 	checkType               health.CheckType
@@ -50,7 +51,7 @@ type keyedErrorHealthCheckSource struct {
 	timeProvider            TimeProvider
 }
 
-// MustNewKeyedErrorHealthCheckSource creates a new KeyedErrorHealthCheckSource panicking in case of error.
+// MustNewKeyedErrorHealthCheckSource creates a new KeyedErrorHealthCheckSource which will panic if any error is encountered.
 // Should only be used in instances where the inputs are statically defined and known to be valid.
 func MustNewKeyedErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, options ...ErrorOption) KeyedErrorHealthCheckSource {
 	source, err := NewKeyedErrorHealthCheckSource(checkType, errorMode, options...)
@@ -90,6 +91,7 @@ func NewKeyedErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorM
 		successStore:            NewTimedKeyStore(conf.timeProvider),
 		gapEndTimeStore:         NewTimedKeyStore(conf.timeProvider),
 		repairingGracePeriod:    conf.repairingGracePeriod,
+		maxErrorAge:             conf.maxErrorAge,
 		globalRepairingDeadline: conf.timeProvider.Now(),
 		checkType:               conf.checkType,
 		checkMessage:            conf.checkMessage,
@@ -179,6 +181,9 @@ func (k *keyedErrorHealthCheckSource) HealthStatus(ctx context.Context) health.H
 }
 
 func (k *keyedErrorHealthCheckSource) shouldError(item TimedKey) bool {
+	if k.maxErrorAge > 0 && k.timeProvider.Now().Sub(item.Time) > k.maxErrorAge {
+		return false
+	}
 	repairingDeadline := k.globalRepairingDeadline
 	if gapEndTime, hasRepairingDeadline := k.gapEndTimeStore.Get(item.Key); hasRepairingDeadline {
 		newRepairingDeadline := gapEndTime.Time.Add(k.repairingGracePeriod)

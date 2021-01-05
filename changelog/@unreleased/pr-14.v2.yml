@@ -1,0 +1,5 @@
+type: feature
+feature:
+  description: Add maximum error age option to window health checks
+  links:
+  - https://github.com/palantir/witchcraft-go-health/pull/14
