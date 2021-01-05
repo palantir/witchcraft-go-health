@@ -297,6 +297,39 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_RepairingThenGap(t *te
 	assert.Equal(t, health.HealthState_HEALTHY, checkResult.State.Value())
 }
 
+// TestHealthyIfNotAllErrorsSource_MaximumErrorAge validates that errors that happened more than the max age ago
+// only cause the health check to report repairing.
+func TestHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
+	timeProvider := &offsetTimeProvider{}
+	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithWindowSize(windowSize),
+		WithMaximumErrorAge(windowSize/2),
+		WithTimeProvider(timeProvider))
+	assert.NoError(t, err)
+
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	timeProvider.RestlessSleep(windowSize / 4)
+
+	healthStatus := source.HealthStatus(context.Background())
+	checkResult, ok := healthStatus.Checks[testCheckType]
+	assert.True(t, ok)
+	assert.Equal(t, health.HealthState_ERROR, checkResult.State.Value())
+
+	timeProvider.RestlessSleep(windowSize / 2)
+
+	healthStatus = source.HealthStatus(context.Background())
+	checkResult, ok = healthStatus.Checks[testCheckType]
+	assert.True(t, ok)
+	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
+
+	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+
+	healthStatus = source.HealthStatus(context.Background())
+	checkResult, ok = healthStatus.Checks[testCheckType]
+	assert.True(t, ok)
+	assert.Equal(t, health.HealthState_ERROR, checkResult.State.Value())
+}
+
 func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 	checkMessage := "found an error"
 	for _, testCase := range []struct {
