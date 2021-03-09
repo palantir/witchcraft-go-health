@@ -1,0 +1,5 @@
+type: feature
+feature:
+  description: Add an option to configure the default health state value
+  links:
+  - https://github.com/palantir/witchcraft-go-health/pull/16
