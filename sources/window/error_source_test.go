@@ -396,8 +396,8 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 	}
 }
 
-// TestHealthState asserts the behavior of overriding the default ERROR health state
-func TestHealthStateWarning(t *testing.T) {
+// TestHealthStateValue asserts the behavior of overriding the default ERROR health state.
+func TestHealthStateValue(t *testing.T) {
 	ctx := context.Background()
 	for _, tc := range []struct {
 		healthState health.HealthState_Value
