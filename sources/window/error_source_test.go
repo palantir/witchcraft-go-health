@@ -395,3 +395,63 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 		})
 	}
 }
+
+// TestFailingHealthStateValue asserts the behavior of overriding the default ERROR health state.
+func TestFailingHealthStateValue(t *testing.T) {
+	ctx := context.Background()
+	for _, tc := range []struct {
+		healthState health.HealthState_Value
+	}{
+		{health.HealthState_HEALTHY},
+		{health.HealthState_DEFERRING},
+		{health.HealthState_SUSPENDED},
+		{health.HealthState_REPAIRING},
+		{health.HealthState_WARNING},
+		{health.HealthState_ERROR},
+		{health.HealthState_TERMINAL},
+	} {
+		t.Run(string(tc.healthState), func(t *testing.T) {
+			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNoRecentErrors,
+				WithFailingHealthStateValue(tc.healthState),
+				WithWindowSize(time.Hour),
+				WithTimeProvider(&offsetTimeProvider{}))
+			require.NoError(t, err)
+
+			// submit the error and validate the health state value
+			source.Submit(werror.ErrorWithContextParams(ctx, "an error"))
+			healthStatus := source.HealthStatus(ctx)
+			checkResult, ok := healthStatus.Checks[testCheckType]
+			assert.True(t, ok)
+			assert.Equal(t, tc.healthState, checkResult.State.Value())
+		})
+	}
+}
+
+// TestHealthStateOverrideWithMaxAge ensures overriding the health state to something other than the default
+// does not affect the REPAIRING health state being set when using the maximum error age option.
+func TestHealthStateOverrideWithMaxAge(t *testing.T) {
+	ctx := context.Background()
+	timeProvider := &offsetTimeProvider{}
+	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
+		WithFailingHealthStateValue(health.HealthState_WARNING),
+		WithWindowSize(windowSize),
+		WithMaximumErrorAge(windowSize/2),
+		WithTimeProvider(timeProvider))
+	assert.NoError(t, err)
+
+	source.Submit(werror.ErrorWithContextParams(ctx, "an error"))
+
+	// Initial state before maximum error age is reached is expected to be WARNING
+	timeProvider.RestlessSleep(windowSize / 4)
+	healthStatus := source.HealthStatus(ctx)
+	checkResult, ok := healthStatus.Checks[testCheckType]
+	assert.True(t, ok)
+	assert.Equal(t, health.HealthState_WARNING, checkResult.State.Value())
+
+	// Sleeping for the maximum error age should now produce a REPAIRING health check
+	timeProvider.RestlessSleep(windowSize / 2)
+	healthStatus = source.HealthStatus(ctx)
+	checkResult, ok = healthStatus.Checks[testCheckType]
+	assert.True(t, ok)
+	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
+}

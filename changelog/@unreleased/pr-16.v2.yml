@@ -1,0 +1,8 @@
+type: improvement
+improvement:
+  description: |-
+    Adds the WithFailingHealthStateValue ErrorOption that allows the default health state value to be configured.
+
+    The ErrorHealthCheckSource would previously report an ERROR health state by default when the health status was computed, unless otherwise configured to downgrade to a REPAIRING state. Now the WithFailingHealthStateValue option can be used to configure the default health state value reported in cases where an ERROR health state is not ideal. This option only changes the default health state value and does not affect the logic to downgrade failures to a REPAIRING state.
+  links:
+  - https://github.com/palantir/witchcraft-go-health/pull/16
