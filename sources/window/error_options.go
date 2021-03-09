@@ -54,6 +54,7 @@ type errorSourceConfig struct {
 	requireFirstFullWindow bool
 	maxErrorAge            time.Duration
 	timeProvider           TimeProvider
+	healthState            health.HealthState_Value
 }
 
 func defaultErrorSourceConfig(checkType health.CheckType) errorSourceConfig {
@@ -65,6 +66,7 @@ func defaultErrorSourceConfig(checkType health.CheckType) errorSourceConfig {
 		requireFirstFullWindow: false,
 		maxErrorAge:            0,
 		timeProvider:           NewOrdinaryTimeProvider(),
+		healthState:            health.HealthState_ERROR,
 	}
 }
 
@@ -130,5 +132,13 @@ func WithMaximumErrorAge(maxErrorAge time.Duration) ErrorOption {
 func WithTimeProvider(timeProvider TimeProvider) ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.timeProvider = timeProvider
+	}
+}
+
+// WithHealthStateValue overrides the default health state to use when setting the health check to unhealthy.
+// If not set, the default health state value will be an ERROR.
+func WithHealthStateValue(healthState health.HealthState_Value) ErrorOption {
+	return func(conf *errorSourceConfig) {
+		conf.healthState = healthState
 	}
 }
