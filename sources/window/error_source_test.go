@@ -454,5 +454,4 @@ func TestHealthStateOverrideWithMaxAge(t *testing.T) {
 	checkResult, ok = healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
-
 }
