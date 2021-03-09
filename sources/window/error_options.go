@@ -135,11 +135,11 @@ func WithTimeProvider(timeProvider TimeProvider) ErrorOption {
 	}
 }
 
-// WithHealthStateValue overrides the default health state value used when computing the health status.
+// WithFailingHealthStateValue overrides the default health state value used when computing the health status in failure cases.
 // All options that reduce errors to a REPAIRING health state will continue to work as expected, as this option
 // strictly configures the base health state value before computing the full health status.
 // If not set, the default health state value will be an ERROR.
-func WithHealthStateValue(healthState health.HealthState_Value) ErrorOption {
+func WithFailingHealthStateValue(healthState health.HealthState_Value) ErrorOption {
 	return func(conf *errorSourceConfig) {
 		conf.healthState = healthState
 	}

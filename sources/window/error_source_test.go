@@ -396,8 +396,8 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 	}
 }
 
-// TestHealthStateValue asserts the behavior of overriding the default ERROR health state.
-func TestHealthStateValue(t *testing.T) {
+// TestFailingHealthStateValue asserts the behavior of overriding the default ERROR health state.
+func TestFailingHealthStateValue(t *testing.T) {
 	ctx := context.Background()
 	for _, tc := range []struct {
 		healthState health.HealthState_Value
@@ -412,7 +412,7 @@ func TestHealthStateValue(t *testing.T) {
 	} {
 		t.Run(string(tc.healthState), func(t *testing.T) {
 			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNoRecentErrors,
-				WithHealthStateValue(tc.healthState),
+				WithFailingHealthStateValue(tc.healthState),
 				WithWindowSize(time.Hour),
 				WithTimeProvider(&offsetTimeProvider{}))
 			require.NoError(t, err)
@@ -433,7 +433,7 @@ func TestHealthStateOverrideWithMaxAge(t *testing.T) {
 	ctx := context.Background()
 	timeProvider := &offsetTimeProvider{}
 	source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfNotAllErrors,
-		WithHealthStateValue(health.HealthState_WARNING),
+		WithFailingHealthStateValue(health.HealthState_WARNING),
 		WithWindowSize(windowSize),
 		WithMaximumErrorAge(windowSize/2),
 		WithTimeProvider(timeProvider))
