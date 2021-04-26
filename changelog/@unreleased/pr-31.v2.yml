@@ -1,0 +1,5 @@
+type: improvement
+improvement:
+  description: Updates witchcraft-health-api Conjure definition to 1.3.0
+  links:
+  - https://github.com/palantir/witchcraft-go-health/pull/31
