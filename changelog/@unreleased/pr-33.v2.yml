@@ -3,6 +3,6 @@ improvement:
   description: |-
     Adds WithFailingHealthStateValue support to the KeyedErrorHealthCheckSource.
 
-    The KeyedErrorHealthCheckSource would previously only report an ERROR health state by default when the health status was computed. Now the WithFailingHealthStateValue can be used for the KeyedErrorHealthCheckSource which configures the health state used to configure the default health state. This option doesn't affect he logic to downgrade failures to a REPAIRING state.
+    The KeyedErrorHealthCheckSource would previously only report an ERROR health state by default when the health status was computed. Now the WithFailingHealthStateValue can be used for the KeyedErrorHealthCheckSource which configures the health state used when reporting a non-healthy health check result. This option doesn't affect the logic to downgrade failures to a REPAIRING state.
   links:
   - https://github.com/palantir/witchcraft-go-health/pull/33
