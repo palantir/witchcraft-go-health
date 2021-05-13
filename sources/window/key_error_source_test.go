@@ -767,3 +767,34 @@ func TestKeyedUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 		})
 	}
 }
+
+// TestKeyedFailingHealthStateValue asserts the behavior of overriding the default ERROR health state.
+func TestKeyedFailingHealthStateValue(t *testing.T) {
+	ctx := context.Background()
+	for _, tc := range []struct {
+		healthState health.HealthState_Value
+	}{
+		{health.HealthState_HEALTHY},
+		{health.HealthState_DEFERRING},
+		{health.HealthState_SUSPENDED},
+		{health.HealthState_REPAIRING},
+		{health.HealthState_WARNING},
+		{health.HealthState_ERROR},
+		{health.HealthState_TERMINAL},
+	} {
+		t.Run(string(tc.healthState), func(t *testing.T) {
+			source, err := NewKeyedErrorHealthCheckSource(testCheckType, HealthyIfNoRecentErrors,
+				WithFailingHealthStateValue(tc.healthState),
+				WithWindowSize(time.Hour),
+				WithTimeProvider(&offsetTimeProvider{}))
+			require.NoError(t, err)
+
+			// submit the error and validate the health state value
+			source.Submit("1", werror.ErrorWithContextParams(ctx, "an error"))
+			healthStatus := source.HealthStatus(ctx)
+			checkResult, ok := healthStatus.Checks[testCheckType]
+			assert.True(t, ok)
+			assert.Equal(t, tc.healthState, checkResult.State.Value())
+		})
+	}
+}
