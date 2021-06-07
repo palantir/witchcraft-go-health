@@ -30,7 +30,6 @@ var _ HealthReporter = &healthReporter{}
 
 type HealthReporter interface {
 	status.HealthCheckSource
-	MustInitializeHealthComponent(name string) HealthComponent
 	InitializeHealthComponent(name string) (HealthComponent, error)
 	GetHealthComponent(name string) (HealthComponent, bool)
 	UnregisterHealthComponent(name string) bool
@@ -53,10 +52,10 @@ func newHealthReporter() *healthReporter {
 	}
 }
 
-// MustInitializeHealthComponent - Same as InitializeHealthComponent, but panics if the component name is
-// non-SLS compliant, or the name is already in use
-func (r *healthReporter) MustInitializeHealthComponent(name string) HealthComponent {
-	healthComponent, err := r.InitializeHealthComponent(name)
+// MustInitializeHealthComponent is a convenience function that calls InitializeHealthComponent on the provided
+// HealthReporter and panics if an error would have occurred
+func MustInitializeHealthComponent(hr HealthReporter, name string) HealthComponent {
+	healthComponent, err := hr.InitializeHealthComponent(name)
 	if err != nil {
 		panic(err)
 	}
