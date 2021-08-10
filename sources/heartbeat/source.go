@@ -65,10 +65,10 @@ func NewHealthCheckSourceWithStartupGracePeriod(checkType health.CheckType, hear
 }
 
 // MustNewHealthCheckSource creates a HealthCheckSource with the specified
-// heartbeatTimeout and HeartbeatOptions. The returning HealthCheckResult is of type checkType.
+// heartbeatTimeout and a set of Option modifiers. The returning HealthCheckResult is of type checkType.
 // Panics if inputs are invalid.
 // Should only be used in instances where the inputs are statically defined and known to be valid.
-func MustNewHealthCheckSource(checkType health.CheckType, heartbeatTimeout time.Duration, options ...HeartbeatOption) *HealthCheckSource {
+func MustNewHealthCheckSource(checkType health.CheckType, heartbeatTimeout time.Duration, options ...Option) *HealthCheckSource {
 	healthCheckSource, err := NewHealthCheckSource(checkType, heartbeatTimeout)
 	if err != nil {
 		panic(err)
@@ -76,9 +76,9 @@ func MustNewHealthCheckSource(checkType health.CheckType, heartbeatTimeout time.
 	return healthCheckSource
 }
 
-// NewHealthCheckSource creates a HealthCheckSource with the specified heartbeatTimeout and HeartbeatOptions.
+// NewHealthCheckSource creates a HealthCheckSource with the specified heartbeatTimeout and a set of Option modifiers.
 // The returning HealthCheckResult is of type checkType. Returns an error if any inputs are invalid.
-func NewHealthCheckSource(checkType health.CheckType, heartbeatTimeout time.Duration, options ...HeartbeatOption) (*HealthCheckSource, error) {
+func NewHealthCheckSource(checkType health.CheckType, heartbeatTimeout time.Duration, options ...Option) (*HealthCheckSource, error) {
 	conf := defaultHeartbeatSourceConfig(checkType)
 	conf.apply(options...)
 
