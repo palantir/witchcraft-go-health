@@ -43,6 +43,7 @@ func (h *heartbeatSourceConfig) apply(options ...Option) {
 
 // WithStartupGracePeriod configures an initial grace period that allows the health check source to remain healthy
 // despite no heartbeats within the configured heartbeat timeout. This grace period is only applied once on startup.
+// If unset, no grace period is provided.
 func WithStartupGracePeriod(period time.Duration) Option {
 	return func(conf *heartbeatSourceConfig) {
 		conf.startupGracePeriod = period
