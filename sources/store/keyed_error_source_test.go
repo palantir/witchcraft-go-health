@@ -66,39 +66,42 @@ func TestKeyedMessengerHealthStateHealthy(t *testing.T) {
 
 func TestKeyedMessengerHealthStateErrorAndPreserve(t *testing.T) {
 	keyedErrorSource := NewKeyedErrorHealthCheckSource("TEST", testMessage)
-	keyedErrorSource.Submit("1", werror.Error("error message 1", werror.SafeParam("foo", "baz")))
-	keyedErrorSource.Submit("2", nil)
+	keyedErrorSource.Submit("1", werror.Error("error message 1"))
+	keyedErrorSource.Submit("2", werror.Error("error message 2"))
 	keyedErrorSource.Submit("3", nil)
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			"TEST": {
 				Message: &testMessage,
 				Params: map[string]interface{}{
-					"1":     "error message 1",
-					"1-foo": "baz",
+					"1": "error message 1",
+					"2": "error message 2",
 				},
 				State: health.New_HealthState(health.HealthState_ERROR),
 				Type:  "TEST",
 			},
 		},
 	}, keyedErrorSource.HealthStatus(context.Background()))
-	// Keep Error
-	keyedErrorSource.PreserveKeys([]string{"1", "3"})
+	// Keep One Error
+	keyedErrorSource.PurgeKeys(func(key string) bool {
+		return key == "1"
+	})
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			"TEST": {
 				Message: &testMessage,
 				Params: map[string]interface{}{
-					"1":     "error message 1",
-					"1-foo": "baz",
+					"2": "error message 2",
 				},
 				State: health.New_HealthState(health.HealthState_ERROR),
 				Type:  "TEST",
 			},
 		},
 	}, keyedErrorSource.HealthStatus(context.Background()))
-	// Keep healthy
-	keyedErrorSource.PreserveKeys([]string{"3"})
+	// Remove other
+	keyedErrorSource.PurgeKeys(func(key string) bool {
+		return key == "2"
+	})
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			"TEST": {

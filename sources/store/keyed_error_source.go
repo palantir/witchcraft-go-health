@@ -31,8 +31,9 @@ type KeyedErrorSubmitter interface {
 	// Submit stores non-nil errors by the provided key in a map; keys of submitted nil errors are
 	// deleted from the map.
 	Submit(key string, err error)
-	// PreserveKeys removes all keys from the health check that are not present in the given preserveKeys
-	PreserveKeys(preserveKeys []string)
+	// PurgeKeys iterates through all currently tracked keys, calling fn on each.
+	// If fn returns true, the key will be removed from the healthcheck.
+	PurgeKeys(fn func(key string) bool)
 }
 
 // KeyedErrorHealthCheckSource tracks errors by key to compute health status. Only entries with non-nil
@@ -49,22 +50,6 @@ type keyedErrorHealthCheckSource struct {
 	keyedErrors  map[string]error
 	checkType    health.CheckType
 	checkMessage string
-}
-
-func (k *keyedErrorHealthCheckSource) PreserveKeys(keys []string) {
-	k.lock.Lock()
-	defer k.lock.Unlock()
-	desiredKeys := make(map[string]struct{}, len(keys))
-	for _, key := range keys {
-		desiredKeys[key] = struct{}{}
-	}
-	for keyName := range k.keyedErrors {
-		_, ok := desiredKeys[keyName]
-		if ok {
-			continue
-		}
-		delete(k.keyedErrors, keyName)
-	}
 }
 
 // NewKeyedErrorHealthCheckSource creates a health messenger that tracks errors by keys to compute health status.
@@ -116,5 +101,15 @@ func (k *keyedErrorHealthCheckSource) HealthStatus(ctx context.Context) health.H
 				State:   health.New_HealthState(health.HealthState_ERROR),
 			},
 		},
+	}
+}
+
+func (k *keyedErrorHealthCheckSource) PurgeKeys(fn func(key string) bool) {
+	k.lock.Lock()
+	defer k.lock.Unlock()
+	for keyName := range k.keyedErrors {
+		if fn(keyName) {
+			delete(k.keyedErrors, keyName)
+		}
 	}
 }
