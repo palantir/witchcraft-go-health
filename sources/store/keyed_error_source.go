@@ -31,6 +31,9 @@ type KeyedErrorSubmitter interface {
 	// Submit stores non-nil errors by the provided key in a map; keys of submitted nil errors are
 	// deleted from the map.
 	Submit(key string, err error)
+	// PurgeKeys iterates through all currently tracked keys, calling fn on each.
+	// If fn returns true, the key will be removed from the healthcheck.
+	PurgeKeys(fn func(key string) bool)
 }
 
 // KeyedErrorHealthCheckSource tracks errors by key to compute health status. Only entries with non-nil
@@ -98,5 +101,15 @@ func (k *keyedErrorHealthCheckSource) HealthStatus(ctx context.Context) health.H
 				State:   health.New_HealthState(health.HealthState_ERROR),
 			},
 		},
+	}
+}
+
+func (k *keyedErrorHealthCheckSource) PurgeKeys(fn func(key string) bool) {
+	k.lock.Lock()
+	defer k.lock.Unlock()
+	for keyName := range k.keyedErrors {
+		if fn(keyName) {
+			delete(k.keyedErrors, keyName)
+		}
 	}
 }
