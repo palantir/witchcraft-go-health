@@ -63,3 +63,32 @@ func TestKeyedMessengerHealthStateHealthy(t *testing.T) {
 		},
 	}, keyedErrorSource.HealthStatus(context.Background()))
 }
+
+func TestKeyedMessengerHealthStateErrorAndPreserve(t *testing.T) {
+	keyedErrorSource := NewKeyedErrorHealthCheckSource("TEST", testMessage)
+	keyedErrorSource.Submit("1", werror.Error("error message 1", werror.SafeParam("foo", "baz")))
+	keyedErrorSource.Submit("2", nil)
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"TEST": {
+				Message: &testMessage,
+				Params: map[string]interface{}{
+					"1":     "error message 1",
+					"1-foo": "baz",
+				},
+				State: health.New_HealthState(health.HealthState_ERROR),
+				Type:  "TEST",
+			},
+		},
+	}, keyedErrorSource.HealthStatus(context.Background()))
+	keyedErrorSource.PreserveKeys([]string{"2"})
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"TEST": {
+				Message: &testMessage,
+				State:   health.New_HealthState(health.HealthState_HEALTHY),
+				Type:    "TEST",
+			},
+		},
+	}, keyedErrorSource.HealthStatus(context.Background()))
+}

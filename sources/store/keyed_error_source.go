@@ -31,6 +31,8 @@ type KeyedErrorSubmitter interface {
 	// Submit stores non-nil errors by the provided key in a map; keys of submitted nil errors are
 	// deleted from the map.
 	Submit(key string, err error)
+	// PreserveKeys removes all keys from the health check that are not present in the given preserveKeys
+	PreserveKeys(preserveKeys []string)
 }
 
 // KeyedErrorHealthCheckSource tracks errors by key to compute health status. Only entries with non-nil
@@ -47,6 +49,22 @@ type keyedErrorHealthCheckSource struct {
 	keyedErrors  map[string]error
 	checkType    health.CheckType
 	checkMessage string
+}
+
+func (k *keyedErrorHealthCheckSource) PreserveKeys(keys []string) {
+	k.lock.Lock()
+	defer k.lock.Unlock()
+	desiredKeys := make(map[string]struct{}, len(keys))
+	for _, key := range keys {
+		desiredKeys[key] = struct{}{}
+	}
+	for keyName := range k.keyedErrors {
+		_, ok := desiredKeys[keyName]
+		if ok {
+			continue
+		}
+		delete(k.keyedErrors, keyName)
+	}
 }
 
 // NewKeyedErrorHealthCheckSource creates a health messenger that tracks errors by keys to compute health status.
