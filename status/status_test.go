@@ -55,7 +55,7 @@ func TestCombinedHealthCheckSource(t *testing.T) {
 			},
 		},
 	}
-	combined := NewCombinedHealthCheckSource(sourceA, sourceB)
+	combined := NewCombinedHealthCheckSource(sourceA, sourceB, nil)
 	actual := combined.HealthStatus(context.Background())
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
