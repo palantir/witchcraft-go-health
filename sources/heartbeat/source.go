@@ -144,7 +144,7 @@ func (h *HealthCheckSource) HealthStatus(_ context.Context) health.HealthStatus 
 	}
 
 	params := map[string]interface{}{
-		"heartbeatTimeout":  h.heartbeatTimeout.String(),
+		"heartbeatTimeout": h.heartbeatTimeout.String(),
 	}
 	if curTime.Sub(h.lastHeartbeatTime) < h.heartbeatTimeout {
 		return health.HealthStatus{
