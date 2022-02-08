@@ -22,6 +22,7 @@ import (
 	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
 	"github.com/palantir/witchcraft-go-health/status"
+	"github.com/palantir/witchcraft-go-logging/wlog/svclog/svc1log"
 )
 
 const (
@@ -106,7 +107,7 @@ func NewHealthCheckSource(checkType health.CheckType, heartbeatTimeout time.Dura
 // If it was, returns healthy. If not, returns unhealthy.
 // If there were no heartbeats submitted, checks if the source started within the last startupTimeout time frame.
 // If it was, returns repairing. If not, returns unhealthy.
-func (h *HealthCheckSource) HealthStatus(_ context.Context) health.HealthStatus {
+func (h *HealthCheckSource) HealthStatus(ctx context.Context) health.HealthStatus {
 	h.heartbeatMutex.RLock()
 	defer h.heartbeatMutex.RUnlock()
 	curTime := time.Now()
@@ -118,26 +119,26 @@ func (h *HealthCheckSource) HealthStatus(_ context.Context) health.HealthStatus 
 		}
 		if curTime.Sub(h.sourceStartupTime) < h.startupTimeout {
 			message := "Waiting for initial heartbeat"
+			svc1log.FromContext(ctx).Debug(message, svc1log.SafeParams(params))
 			return health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
 					h.checkType: {
 						Type:    h.checkType,
 						State:   health.New_HealthState(health.HealthState_REPAIRING),
 						Message: &message,
-						Params:  params,
 					},
 				},
 			}
 		}
 
 		message := "No heartbeats since startup"
+		svc1log.FromContext(ctx).Error(message, svc1log.SafeParams(params))
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				h.checkType: {
 					Type:    h.checkType,
 					State:   health.New_HealthState(health.HealthState_ERROR),
 					Message: &message,
-					Params:  params,
 				},
 			},
 		}
@@ -150,9 +151,8 @@ func (h *HealthCheckSource) HealthStatus(_ context.Context) health.HealthStatus 
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				h.checkType: {
-					Type:   h.checkType,
-					State:  health.New_HealthState(health.HealthState_HEALTHY),
-					Params: params,
+					Type:  h.checkType,
+					State: health.New_HealthState(health.HealthState_HEALTHY),
 				},
 			},
 		}
@@ -160,13 +160,13 @@ func (h *HealthCheckSource) HealthStatus(_ context.Context) health.HealthStatus 
 
 	message := "Last heartbeat was too long ago"
 	params[lastHeartbeatParam] = h.lastHeartbeatTime.String()
+	svc1log.FromContext(ctx).Error(message, svc1log.SafeParams(params))
 	return health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			h.checkType: {
 				Type:    h.checkType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &message,
-				Params:  params,
 			},
 		},
 	}

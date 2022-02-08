@@ -71,7 +71,7 @@ func TestHealthCheckSource_WithHeartbeats_Error(t *testing.T) {
 	check, hasCheck := status.Checks[testCheckType]
 	require.True(t, hasCheck)
 	assert.Equal(t, health.HealthState_ERROR, check.State.Value())
-	assert.Contains(t, check.Params, lastHeartbeatParam)
+	assert.NotContains(t, check.Params, lastHeartbeatParam)
 }
 
 func TestHealthCheckSource_WithHeartbeats_HealthyThenErrorThenHealthy(t *testing.T) {
