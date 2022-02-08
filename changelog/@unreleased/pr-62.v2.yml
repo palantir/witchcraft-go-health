@@ -1,0 +1,6 @@
+type: fix
+fix:
+  description: |-
+    Exclude the last heartbeat timestamp from heartbeat params.
+  links:
+    - https://github.com/palantir/witchcraft-go-health/pull/62
