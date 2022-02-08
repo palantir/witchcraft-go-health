@@ -24,10 +24,6 @@ import (
 	"github.com/palantir/witchcraft-go-health/status"
 )
 
-const (
-	lastHeartbeatParam = "lastHeartbeatTime"
-)
-
 // HealthCheckSource is a thread-safe HealthCheckSource based on heartbeats.
 // This is used to monitor if some process is continuously running by receiving heartbeats (pings) with timeouts.
 // Heartbeats are submitted manually using the Heartbeat or the HeartbeatIfSuccess functions.
