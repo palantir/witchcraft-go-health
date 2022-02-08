@@ -119,7 +119,10 @@ func (h *HealthCheckSource) HealthStatus(ctx context.Context) health.HealthStatu
 		}
 		if curTime.Sub(h.sourceStartupTime) < h.startupTimeout {
 			message := "Waiting for initial heartbeat"
-			svc1log.FromContext(ctx).Debug(message, svc1log.SafeParams(params))
+			svc1log.FromContext(ctx).Debug(
+				message,
+				svc1log.SafeParam("healthCheckType", h.checkType),
+				svc1log.SafeParams(params))
 			return health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
 					h.checkType: {
@@ -132,7 +135,10 @@ func (h *HealthCheckSource) HealthStatus(ctx context.Context) health.HealthStatu
 		}
 
 		message := "No heartbeats since startup"
-		svc1log.FromContext(ctx).Error(message, svc1log.SafeParams(params))
+		svc1log.FromContext(ctx).Error(
+			message,
+			svc1log.SafeParam("healthCheckType", h.checkType),
+			svc1log.SafeParams(params))
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				h.checkType: {
@@ -160,7 +166,10 @@ func (h *HealthCheckSource) HealthStatus(ctx context.Context) health.HealthStatu
 
 	message := "Last heartbeat was too long ago"
 	params[lastHeartbeatParam] = h.lastHeartbeatTime.String()
-	svc1log.FromContext(ctx).Error(message, svc1log.SafeParams(params))
+	svc1log.FromContext(ctx).Error(
+		message,
+		svc1log.SafeParam("healthCheckType", h.checkType),
+		svc1log.SafeParams(params))
 	return health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			h.checkType: {
