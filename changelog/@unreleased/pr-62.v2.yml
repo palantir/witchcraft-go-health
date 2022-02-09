@@ -1,0 +1,8 @@
+type: fix
+fix:
+  description: |-
+    Remove the last heartbeat timestamp from heartbeat params. The last
+    heartbeat timestamp is inferable from when the health check switches from
+    a HEALTHY to WARN/ERROR state and the configured heartbeatTimeout.
+  links:
+    - https://github.com/palantir/witchcraft-go-health/pull/62

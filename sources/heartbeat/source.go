@@ -24,10 +24,6 @@ import (
 	"github.com/palantir/witchcraft-go-health/status"
 )
 
-const (
-	lastHeartbeatParam = "lastHeartbeatTime"
-)
-
 // HealthCheckSource is a thread-safe HealthCheckSource based on heartbeats.
 // This is used to monitor if some process is continuously running by receiving heartbeats (pings) with timeouts.
 // Heartbeats are submitted manually using the Heartbeat or the HeartbeatIfSuccess functions.
@@ -112,10 +108,6 @@ func (h *HealthCheckSource) HealthStatus(_ context.Context) health.HealthStatus 
 	curTime := time.Now()
 
 	if h.lastHeartbeatTime.IsZero() {
-		params := map[string]interface{}{
-			"sourceStartupTime": h.sourceStartupTime.String(),
-			"startupTimeout":    h.startupTimeout.String(),
-		}
 		if curTime.Sub(h.sourceStartupTime) < h.startupTimeout {
 			message := "Waiting for initial heartbeat"
 			return health.HealthStatus{
@@ -124,7 +116,6 @@ func (h *HealthCheckSource) HealthStatus(_ context.Context) health.HealthStatus 
 						Type:    h.checkType,
 						State:   health.New_HealthState(health.HealthState_REPAIRING),
 						Message: &message,
-						Params:  params,
 					},
 				},
 			}
@@ -137,36 +128,29 @@ func (h *HealthCheckSource) HealthStatus(_ context.Context) health.HealthStatus 
 					Type:    h.checkType,
 					State:   health.New_HealthState(health.HealthState_ERROR),
 					Message: &message,
-					Params:  params,
 				},
 			},
 		}
 	}
 
-	params := map[string]interface{}{
-		"heartbeatTimeout": h.heartbeatTimeout.String(),
-	}
 	if curTime.Sub(h.lastHeartbeatTime) < h.heartbeatTimeout {
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				h.checkType: {
-					Type:   h.checkType,
-					State:  health.New_HealthState(health.HealthState_HEALTHY),
-					Params: params,
+					Type:  h.checkType,
+					State: health.New_HealthState(health.HealthState_HEALTHY),
 				},
 			},
 		}
 	}
 
 	message := "Last heartbeat was too long ago"
-	params[lastHeartbeatParam] = h.lastHeartbeatTime.String()
 	return health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			h.checkType: {
 				Type:    h.checkType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &message,
-				Params:  params,
 			},
 		},
 	}
