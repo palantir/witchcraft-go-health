@@ -69,7 +69,7 @@ func NewHealthCheckSourceWithStartupGracePeriod(checkType health.CheckType, hear
 // Panics if inputs are invalid.
 // Should only be used in instances where the inputs are statically defined and known to be valid.
 func MustNewHealthCheckSource(checkType health.CheckType, heartbeatTimeout time.Duration, options ...Option) *HealthCheckSource {
-	healthCheckSource, err := NewHealthCheckSource(checkType, heartbeatTimeout)
+	healthCheckSource, err := NewHealthCheckSource(checkType, heartbeatTimeout, options...)
 	if err != nil {
 		panic(err)
 	}
