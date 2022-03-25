@@ -396,6 +396,82 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 	}
 }
 
+func TestHealthyIfAtLeastOneSuccessSource(t *testing.T) {
+	checkMessage := "found an error"
+	for _, testCase := range []struct {
+		name          string
+		errors        []error
+		expectedCheck health.HealthCheckResult
+	}{
+		{
+			name:   "unhealthy when there are no items",
+			errors: nil,
+			expectedCheck: sources.RepairingHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+				"error": "no successful results within window",
+			}),
+		},
+		{
+			name: "unhealthy when there are only errors",
+			errors: []error{
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
+			},
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+				"error": "Error #2",
+			}),
+		},
+		{
+			name: "healthy when there are only nil items",
+			errors: []error{
+				nil,
+				nil,
+				nil,
+			},
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+		{
+			name: "healthy when latest submission is a nil err",
+			errors: []error{
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #2"),
+				nil,
+			},
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+		{
+			name: "healthy when latest submission is a non nil err",
+			errors: []error{
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+				nil,
+				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
+			},
+			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
+		},
+	} {
+		t.Run(testCase.name, func(t *testing.T) {
+			timeProvider := &offsetTimeProvider{}
+			source, err := NewErrorHealthCheckSource(testCheckType, HealthyIfAtLeastOneSuccess,
+				WithWindowSize(time.Hour),
+				WithCheckMessage(checkMessage),
+				WithTimeProvider(timeProvider))
+
+			require.NoError(t, err)
+			for _, err := range testCase.errors {
+				source.Submit(err)
+			}
+			actualStatus := source.HealthStatus(context.Background())
+			expectedStatus := health.HealthStatus{
+				Checks: map[health.CheckType]health.HealthCheckResult{
+					testCheckType: testCase.expectedCheck,
+				},
+			}
+			assert.Equal(t, expectedStatus, actualStatus)
+		})
+	}
+}
+
 // TestFailingHealthStateValue asserts the behavior of overriding the default ERROR health state.
 func TestFailingHealthStateValue(t *testing.T) {
 	ctx := context.Background()
