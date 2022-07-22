@@ -19,7 +19,7 @@ github.com/palantir/pkg/safeyaml
 # github.com/palantir/pkg/transform v1.0.0
 ## explicit; go 1.13
 github.com/palantir/pkg/transform
-# github.com/palantir/witchcraft-go-error v1.11.0
+# github.com/palantir/witchcraft-go-error v1.12.0
 ## explicit; go 1.18
 github.com/palantir/witchcraft-go-error
 github.com/palantir/witchcraft-go-error/internal/errors
@@ -33,7 +33,7 @@ github.com/palantir/witchcraft-go-logging/wlog/evtlog/evt2log
 github.com/palantir/witchcraft-go-logging/wlog/internal
 github.com/palantir/witchcraft-go-logging/wlog/svclog/svc1log
 github.com/palantir/witchcraft-go-logging/wlog/wapp
-# github.com/palantir/witchcraft-go-params v1.7.0
+# github.com/palantir/witchcraft-go-params v1.8.0
 ## explicit; go 1.18
 github.com/palantir/witchcraft-go-params
 # github.com/palantir/witchcraft-go-tracing v1.8.0
