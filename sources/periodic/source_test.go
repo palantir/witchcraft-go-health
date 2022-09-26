@@ -343,16 +343,16 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 }
 
 // Test does the following:
-//   * Starts health check source with 10ms retry interval and 100ms grace period
-//   * First health check returns healthy (t=10ms, counter=0)
-//   * Second health check returns unhealthy (t=20ms, counter=1)
-//   * When third health check is run, pause the health check routine and signal that health should be checked (t=30ms)
-//   * TEST: health status should be healthy, counter=0 (checking at roughly t=30ms, so there was a healthy check within grace period)
-//   * Wait until grace period has elapsed since healthy check was returned (roughly t=130ms)
-//   * Third check returns unhealthy (t=130ms, counter=2)
-//   * TEST: health status should be unhealthy due to no success within grace period (checking at roughly t=130ms, so there was a check that occurred within the grace period, but no successful check within the grace period)
-//   * Wait until grace period has elapsed (t=230ms)
-//   * TEST: health status should be unhealthy due to no check within grace period (checking at roughly t=230ms, so there is no check that occurred within the grace period)
+//   - Starts health check source with 10ms retry interval and 100ms grace period
+//   - First health check returns healthy (t=10ms, counter=0)
+//   - Second health check returns unhealthy (t=20ms, counter=1)
+//   - When third health check is run, pause the health check routine and signal that health should be checked (t=30ms)
+//   - TEST: health status should be healthy, counter=0 (checking at roughly t=30ms, so there was a healthy check within grace period)
+//   - Wait until grace period has elapsed since healthy check was returned (roughly t=130ms)
+//   - Third check returns unhealthy (t=130ms, counter=2)
+//   - TEST: health status should be unhealthy due to no success within grace period (checking at roughly t=130ms, so there was a check that occurred within the grace period, but no successful check within the grace period)
+//   - Wait until grace period has elapsed (t=230ms)
+//   - TEST: health status should be unhealthy due to no check within grace period (checking at roughly t=230ms, so there is no check that occurred within the grace period)
 func TestFromHealthCheckSource(t *testing.T) {
 	// health check sends on this channel on its third run (after it has returned healthy and then error)
 	doneChan := make(chan struct{})
