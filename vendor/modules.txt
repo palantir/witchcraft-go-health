@@ -19,7 +19,7 @@ github.com/palantir/pkg/safeyaml
 # github.com/palantir/pkg/transform v1.1.0
 ## explicit; go 1.19
 github.com/palantir/pkg/transform
-# github.com/palantir/witchcraft-go-error v1.18.0
+# github.com/palantir/witchcraft-go-error v1.19.0
 ## explicit; go 1.19
 github.com/palantir/witchcraft-go-error
 github.com/palantir/witchcraft-go-error/internal/errors
