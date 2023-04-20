@@ -34,9 +34,10 @@ const (
 func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 	checkMessage := "found an error"
 	for _, testCase := range []struct {
-		name          string
-		errors        []error
-		expectedCheck health.HealthCheckResult
+		name                    string
+		errors                  []error
+		expectedCheck           health.HealthCheckResult
+		timeSinceLastSubmission time.Duration
 	}{
 		{
 			name:          "healthy when there are no items",
@@ -65,6 +66,14 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				"error": "Error #2",
 			}),
 		},
+		{
+			name: "healthy if no errors in time window",
+			errors: []error{
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+			},
+			timeSinceLastSubmission: 70 * time.Minute,
+			expectedCheck:           sources.HealthyHealthCheckResult(testCheckType),
+		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
@@ -73,10 +82,10 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				WithCheckMessage(checkMessage),
 				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
-
 			for _, err := range testCase.errors {
 				source.Submit(err)
 			}
+			timeProvider.RestlessSleep(testCase.timeSinceLastSubmission)
 			actualStatus := source.HealthStatus(context.Background())
 			expectedStatus := health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
@@ -91,9 +100,10 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 	checkMessage := "found an error"
 	for _, testCase := range []struct {
-		name          string
-		errors        []error
-		expectedCheck health.HealthCheckResult
+		name                    string
+		errors                  []error
+		expectedCheck           health.HealthCheckResult
+		timeSinceLastSubmission time.Duration
 	}{
 		{
 			name:          "healthy when there are no items",
@@ -130,6 +140,15 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				"error": "Error #2",
 			}),
 		},
+		{
+			name: "healthy when there are only non nil items outside of time window",
+			errors: []error{
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
+			},
+			timeSinceLastSubmission: 70 * time.Minute,
+			expectedCheck:           sources.HealthyHealthCheckResult(testCheckType),
+		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
 			timeProvider := &offsetTimeProvider{}
@@ -142,6 +161,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 			for _, err := range testCase.errors {
 				source.Submit(err)
 			}
+			timeProvider.RestlessSleep(testCase.timeSinceLastSubmission)
 			actualStatus := source.HealthStatus(context.Background())
 			expectedStatus := health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
@@ -333,9 +353,10 @@ func TestHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 	checkMessage := "found an error"
 	for _, testCase := range []struct {
-		name          string
-		errors        []error
-		expectedCheck health.HealthCheckResult
+		name                    string
+		errors                  []error
+		expectedCheck           health.HealthCheckResult
+		timeSinceLastSubmission time.Duration
 	}{
 		{
 			name:          "healthy when there are no items",
@@ -363,7 +384,7 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 			expectedCheck: sources.HealthyHealthCheckResult(testCheckType),
 		},
 		{
-			name: "healthy when latest submission is a non nil err",
+			name: "unhealthy when latest submission is a non nil err",
 			errors: []error{
 				werror.ErrorWithContextParams(context.Background(), "Error #1"),
 				nil,
@@ -372,6 +393,14 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
 				"error": "Error #2",
 			}),
+		},
+		{
+			name: "healthy when most recent submission is a non-nil err outside of window",
+			errors: []error{
+				werror.ErrorWithContextParams(context.Background(), "Error #1"),
+			},
+			timeSinceLastSubmission: 70 * time.Minute,
+			expectedCheck:           sources.HealthyHealthCheckResult(testCheckType),
 		},
 	} {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -385,6 +414,7 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 			for _, err := range testCase.errors {
 				source.Submit(err)
 			}
+			timeProvider.RestlessSleep(testCase.timeSinceLastSubmission)
 			actualStatus := source.HealthStatus(context.Background())
 			expectedStatus := health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
@@ -399,13 +429,24 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 func TestHealthyIfAtLeastOneSuccessSource(t *testing.T) {
 	checkMessage := "found an error"
 	for _, testCase := range []struct {
-		name          string
-		errors        []error
-		expectedCheck health.HealthCheckResult
+		name                    string
+		errors                  []error
+		expectedCheck           health.HealthCheckResult
+		timeSinceLastSubmission time.Duration
 	}{
 		{
 			name:   "unhealthy when there are no items",
 			errors: nil,
+			expectedCheck: sources.RepairingHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+				"error": "no successful results within window",
+			}),
+		},
+		{
+			name: "unhealthy when all items are outside of window",
+			errors: []error{
+				nil,
+			},
+			timeSinceLastSubmission: 70 * time.Minute,
 			expectedCheck: sources.RepairingHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
 				"error": "no successful results within window",
 			}),
@@ -461,6 +502,7 @@ func TestHealthyIfAtLeastOneSuccessSource(t *testing.T) {
 			for _, err := range testCase.errors {
 				source.Submit(err)
 			}
+			timeProvider.RestlessSleep(testCase.timeSinceLastSubmission)
 			actualStatus := source.HealthStatus(context.Background())
 			expectedStatus := health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
