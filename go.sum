@@ -17,10 +17,10 @@ github.com/palantir/pkg/safeyaml v1.1.0 h1:5Pt3cGNw5QyOPYwfLsPImh+SiNIilSw3Cn4t3
 github.com/palantir/pkg/safeyaml v1.1.0/go.mod h1:RG0a/ze5V6uppZJvwV2e3RmyjKMxdPpwIyS5OHp3DPU=
 github.com/palantir/pkg/transform v1.1.0 h1:43tnYETShELXCRro6+uc0GlgB4GZvsQ/YNH5301IxW8=
 github.com/palantir/pkg/transform v1.1.0/go.mod h1:SHqpFkx1vKQ8Bb81VsmySYTsSHSBtgj06cZm9HihuGk=
-github.com/palantir/witchcraft-go-error v1.25.0 h1:UQn/Lqwlpi36v2tDtntmM982LB7mljNY/5zPIj0beoo=
-github.com/palantir/witchcraft-go-error v1.25.0/go.mod h1:PyXtsAzQ09fydcrOaWEihcULY4H7H178HrQsut4GW7M=
-github.com/palantir/witchcraft-go-logging v1.42.0 h1:iNqHwpWwclfm8a0NVuUrrgzdBW5U2IdKA8kXhKzrrD0=
-github.com/palantir/witchcraft-go-logging v1.42.0/go.mod h1:vfzf4g97FZ/g0tXao+Dh/EbFpAMRcKNmhfGyMLx36Ys=
+github.com/palantir/witchcraft-go-error v1.26.0 h1:a3e1I6dunTffaN4ip5mCr4tvR3vQk5k5H+nNTWIcHWc=
+github.com/palantir/witchcraft-go-error v1.26.0/go.mod h1:P5MIw5AxirKrJVR1Lm1RQKznWjOxpL3VAtn70DsVGKI=
+github.com/palantir/witchcraft-go-logging v1.43.0 h1:gvCtRBWvObBEPGZ9bWx94eFJmIpnCoDpqDeO0B6SfUs=
+github.com/palantir/witchcraft-go-logging v1.43.0/go.mod h1:+64fmsyoFApNUKc/4gKNh8EK0NdhUF1VzM1Q3HJB5WU=
 github.com/palantir/witchcraft-go-params v1.24.0 h1:xkvM0XiZYIJpKQ6njXxhQioGesecDNAfeyMzvQMiEWg=
 github.com/palantir/witchcraft-go-params v1.24.0/go.mod h1:MlO5fxylWlbFR/A1vESeFy13etiIhgKaIqoL9nXTK6I=
 github.com/palantir/witchcraft-go-tracing v1.26.0 h1:7KO2vKqaKE5o530zNd8fLfzIdWYxu9U61H7DxW5raMg=
