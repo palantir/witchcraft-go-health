@@ -33,10 +33,10 @@ github.com/palantir/witchcraft-go-logging/wlog/evtlog/evt2log
 github.com/palantir/witchcraft-go-logging/wlog/internal
 github.com/palantir/witchcraft-go-logging/wlog/svclog/svc1log
 github.com/palantir/witchcraft-go-logging/wlog/wapp
-# github.com/palantir/witchcraft-go-params v1.23.0
+# github.com/palantir/witchcraft-go-params v1.24.0
 ## explicit; go 1.20
 github.com/palantir/witchcraft-go-params
-# github.com/palantir/witchcraft-go-tracing v1.25.0
+# github.com/palantir/witchcraft-go-tracing v1.26.0
 ## explicit; go 1.20
 github.com/palantir/witchcraft-go-tracing/wtracing
 # github.com/pmezard/go-difflib v1.0.0
