@@ -7,7 +7,7 @@ require (
 	github.com/palantir/pkg/safeyaml v1.1.0
 	github.com/palantir/witchcraft-go-error v1.34.0
 	github.com/palantir/witchcraft-go-logging v1.51.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.9.0
 )
 
 require (
