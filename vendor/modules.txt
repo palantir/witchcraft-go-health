@@ -23,7 +23,7 @@ github.com/palantir/pkg/transform
 ## explicit; go 1.21
 github.com/palantir/witchcraft-go-error
 github.com/palantir/witchcraft-go-error/internal/errors
-# github.com/palantir/witchcraft-go-logging v1.51.0
+# github.com/palantir/witchcraft-go-logging v1.52.0
 ## explicit; go 1.21
 github.com/palantir/witchcraft-go-logging/conjure/witchcraft/api/logging
 github.com/palantir/witchcraft-go-logging/internal/gopath
