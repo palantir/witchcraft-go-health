@@ -16,7 +16,7 @@ require (
 	github.com/palantir/pkg/datetime v1.1.0 // indirect
 	github.com/palantir/pkg/safelong v1.1.0 // indirect
 	github.com/palantir/pkg/transform v1.1.0 // indirect
-	github.com/palantir/witchcraft-go-params v1.32.0 // indirect
+	github.com/palantir/witchcraft-go-params v1.33.0 // indirect
 	github.com/palantir/witchcraft-go-tracing v1.35.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
