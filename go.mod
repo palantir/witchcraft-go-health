@@ -1,6 +1,6 @@
 module github.com/palantir/witchcraft-go-health
 
-go 1.21
+go 1.23.0
 
 require (
 	github.com/palantir/pkg/safejson v1.1.0
