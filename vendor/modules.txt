@@ -19,11 +19,15 @@ github.com/palantir/pkg/safeyaml
 # github.com/palantir/pkg/transform v1.1.0
 ## explicit; go 1.19
 github.com/palantir/pkg/transform
+# github.com/palantir/pkg/uuid v1.2.0
+## explicit; go 1.19
+github.com/palantir/pkg/uuid
+github.com/palantir/pkg/uuid/internal/uuid
 # github.com/palantir/witchcraft-go-error v1.41.0
 ## explicit; go 1.24.0
 github.com/palantir/witchcraft-go-error
 github.com/palantir/witchcraft-go-error/internal/errors
-# github.com/palantir/witchcraft-go-logging v1.59.0
+# github.com/palantir/witchcraft-go-logging v1.60.0
 ## explicit; go 1.24.0
 github.com/palantir/witchcraft-go-logging/conjure/witchcraft/api/logging
 github.com/palantir/witchcraft-go-logging/internal/gopath
