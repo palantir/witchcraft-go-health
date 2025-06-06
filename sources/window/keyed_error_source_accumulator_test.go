@@ -17,9 +17,10 @@ package window
 import (
 	"context"
 	"errors"
+	"testing"
+
 	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestKeyedErrorSourceAccumulatorCanError(t *testing.T) {
