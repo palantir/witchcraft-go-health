@@ -18,7 +18,7 @@ require (
 	github.com/palantir/pkg/transform v1.1.0 // indirect
 	github.com/palantir/pkg/uuid v1.2.0 // indirect
 	github.com/palantir/witchcraft-go-params v1.39.0 // indirect
-	github.com/palantir/witchcraft-go-tracing v1.40.0 // indirect
+	github.com/palantir/witchcraft-go-tracing v1.41.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
