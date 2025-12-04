@@ -10,18 +10,18 @@ import (
 // Metadata describing the status of a service.
 type HealthCheckResult struct {
 	// A constant representing the type of health check. Values should be uppercase, underscore delimited, ascii letters with no spaces, ([A-Z_]).
-	Type CheckType `conjure-docs:"A constant representing the type of health check. Values should be uppercase, underscore delimited, ascii letters with no spaces, ([A-Z_])." json:"type"`
+	Type CheckType `json:"type"`
 	// Health state of the check.
-	State HealthState `conjure-docs:"Health state of the check." json:"state"`
+	State HealthState `json:"state"`
 	// Text describing the state of the check which should provide enough information for the check to be actionable when included in an alert.
-	Message *string `conjure-docs:"Text describing the state of the check which should provide enough information for the check to be actionable when included in an alert." json:"message,omitempty"`
+	Message *string `json:"message,omitempty"`
 	// Additional redacted information on the nature of the health check.
-	Params map[string]interface{} `conjure-docs:"Additional redacted information on the nature of the health check." json:"params"`
+	Params map[string]interface{} `json:"params"`
 }
 
 func (o HealthCheckResult) MarshalJSON() ([]byte, error) {
 	if o.Params == nil {
-		o.Params = make(map[string]interface{}, 0)
+		o.Params = make(map[string]interface{})
 	}
 	type _tmpHealthCheckResult HealthCheckResult
 	return safejson.Marshal(_tmpHealthCheckResult(o))
@@ -34,7 +34,7 @@ func (o *HealthCheckResult) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if rawHealthCheckResult.Params == nil {
-		rawHealthCheckResult.Params = make(map[string]interface{}, 0)
+		rawHealthCheckResult.Params = make(map[string]interface{})
 	}
 	*o = HealthCheckResult(rawHealthCheckResult)
 	return nil
@@ -62,7 +62,7 @@ type HealthStatus struct {
 
 func (o HealthStatus) MarshalJSON() ([]byte, error) {
 	if o.Checks == nil {
-		o.Checks = make(map[CheckType]HealthCheckResult, 0)
+		o.Checks = make(map[CheckType]HealthCheckResult)
 	}
 	type _tmpHealthStatus HealthStatus
 	return safejson.Marshal(_tmpHealthStatus(o))
@@ -75,7 +75,7 @@ func (o *HealthStatus) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if rawHealthStatus.Checks == nil {
-		rawHealthStatus.Checks = make(map[CheckType]HealthCheckResult, 0)
+		rawHealthStatus.Checks = make(map[CheckType]HealthCheckResult)
 	}
 	*o = HealthStatus(rawHealthStatus)
 	return nil
