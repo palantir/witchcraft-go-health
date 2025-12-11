@@ -1,5 +1,7 @@
-version: 1
+version: 2
 projects:
-  conjure:
+  witchcraft-health-api:
     output-dir: ./conjure
     ir-locator: https://repo1.maven.org/maven2/com/palantir/witchcraft/api/witchcraft-health-api/1.3.0/witchcraft-health-api-1.3.0.conjure.json
+    # necessary to preserve import path since types are exported and used
+    omit-top-level-project-dir: true
