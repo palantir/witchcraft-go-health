@@ -25,7 +25,7 @@ import (
 
 func TestKeyedErrorSourceAccumulatorCanError(t *testing.T) {
 	keyedErrorSourceAccumulator := NewDefaultKeyedErrorSourceAccumulator(MustNewKeyedErrorHealthCheckSource("check", UnhealthyIfAtLeastOneError))
-	keyedErrorSourceAccumulator.Submit("key", errors.New("uhoh"))
+	keyedErrorSourceAccumulator.Submit(context.Background(), "key", errors.New("uhoh"))
 	str := ""
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
@@ -65,7 +65,7 @@ func TestKeyedErrorSourceAccumulatorCanAdd(t *testing.T) {
 			},
 		},
 	}, keyedErrorSourceAccumulator.HealthStatus(context.Background()))
-	anotherCheck.Submit("key", errors.New("uhoh"))
+	anotherCheck.Submit(context.Background(), "key", errors.New("uhoh"))
 	str := ""
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{

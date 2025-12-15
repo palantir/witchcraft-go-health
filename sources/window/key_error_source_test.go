@@ -99,7 +99,7 @@ func TestKeyedUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				WithCheckMessage(checkMessage))
 			require.NoError(t, err)
 			for _, keyErrorPair := range testCase.keyErrorPairs {
-				source.Submit(keyErrorPair.key, keyErrorPair.err)
+				source.Submit(context.Background(), keyErrorPair.key, keyErrorPair.err)
 			}
 			expectedStatus := health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
@@ -200,7 +200,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 			timeProvider.RestlessSleep(time.Hour)
 
 			for _, keyErrorPair := range testCase.keyErrorPairs {
-				source.Submit(keyErrorPair.key, keyErrorPair.err)
+				source.Submit(context.Background(), keyErrorPair.key, keyErrorPair.err)
 			}
 			expectedStatus := health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
@@ -283,7 +283,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
 			require.NoError(t, err)
 
 			for _, keyErrorPair := range testCase.keyErrorPairs {
-				source.Submit(keyErrorPair.key, keyErrorPair.err)
+				source.Submit(context.Background(), keyErrorPair.key, keyErrorPair.err)
 			}
 			expectedStatus := health.HealthStatus{
 				Checks: map[health.CheckType]health.HealthCheckResult{
@@ -311,7 +311,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_InitialWindowErrorsReturnRepairing(t *
 
 	// move partially into the initial health check window
 	timeProvider.RestlessSleep(3 * timeWindow / 4)
-	source.Submit("1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
+	source.Submit(context.Background(), "1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
 
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
@@ -360,7 +360,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 	// move out of the initial health check window
 	timeProvider.RestlessSleep(2 * timeWindow)
 
-	source.Submit("1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
+	source.Submit(context.Background(), "1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
 	timeProvider.RestlessSleep(timeWindow / 2)
 
 	assert.Equal(t, health.HealthStatus{
@@ -376,7 +376,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 		},
 	}, source.HealthStatus(ctx))
 
-	source.Submit("2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
+	source.Submit(context.Background(), "2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
 	timeProvider.RestlessSleep(timeWindow / 4)
 
 	assert.Equal(t, health.HealthStatus{
@@ -393,7 +393,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 		},
 	}, source.HealthStatus(ctx))
 
-	source.Submit("1", nil)
+	source.Submit(context.Background(), "1", nil)
 
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
@@ -408,7 +408,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 		},
 	}, source.HealthStatus(ctx))
 
-	source.Submit("2", nil)
+	source.Submit(context.Background(), "2", nil)
 
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
@@ -434,7 +434,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 	// move out of the initial health check window
 	timeProvider.RestlessSleep(2 * timeWindow)
 
-	source.Submit("1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
+	source.Submit(context.Background(), "1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
 	timeProvider.RestlessSleep(timeWindow / 2)
 
 	assert.Equal(t, health.HealthStatus{
@@ -450,7 +450,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 		},
 	}, source.HealthStatus(ctx))
 
-	source.Submit("2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
+	source.Submit(context.Background(), "2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
 
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
@@ -507,7 +507,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 	// move out of the initial health check window
 	timeProvider.RestlessSleep(2 * timeWindow)
 
-	source.Submit("1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
+	source.Submit(context.Background(), "1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
 	timeProvider.RestlessSleep(timeWindow / 2)
 
 	assert.Equal(t, health.HealthStatus{
@@ -523,7 +523,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 		},
 	}, source.HealthStatus(ctx))
 
-	source.Submit("2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
+	source.Submit(context.Background(), "2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
 	timeProvider.RestlessSleep(timeWindow / 4)
 
 	assert.Equal(t, health.HealthStatus{
@@ -540,9 +540,9 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 		},
 	}, source.HealthStatus(ctx))
 
-	source.Submit("1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
+	source.Submit(context.Background(), "1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
 	timeProvider.RestlessSleep(timeWindow / 2)
-	source.Submit("1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
+	source.Submit(context.Background(), "1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
 
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
@@ -587,7 +587,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 		WithTimeProvider(timeProvider))
 	require.NoError(t, err)
 
-	source.Submit("1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
+	source.Submit(context.Background(), "1", werror.ErrorWithContextParams(ctx, "error for key: 1"))
 	timeProvider.RestlessSleep(timeWindow / 4)
 
 	assert.Equal(t, health.HealthStatus{
@@ -618,7 +618,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 		},
 	}, source.HealthStatus(ctx))
 
-	source.Submit("2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
+	source.Submit(context.Background(), "2", werror.ErrorWithContextParams(ctx, "error for key: 2"))
 
 	assert.Equal(t, health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
@@ -754,7 +754,7 @@ func TestKeyedUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
 			for _, keyErrorPair := range testCase.keyErrorPairs {
-				source.Submit(keyErrorPair.key, keyErrorPair.err)
+				source.Submit(context.Background(), keyErrorPair.key, keyErrorPair.err)
 			}
 			timeProvider.RestlessSleep(testCase.durationAfterSubmissions)
 			expectedStatus := health.HealthStatus{
@@ -790,7 +790,7 @@ func TestKeyedFailingHealthStateValue(t *testing.T) {
 			require.NoError(t, err)
 
 			// submit the error and validate the health state value
-			source.Submit("1", werror.ErrorWithContextParams(ctx, "an error"))
+			source.Submit(context.Background(), "1", werror.ErrorWithContextParams(ctx, "an error"))
 			healthStatus := source.HealthStatus(ctx)
 			checkResult, ok := healthStatus.Checks[testCheckType]
 			assert.True(t, ok)
