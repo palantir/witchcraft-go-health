@@ -20,7 +20,7 @@ import (
 
 	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-health/sources/store"
+	"github.com/palantir/witchcraft-go-health/sources/window"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -33,7 +33,7 @@ func TestSource(t *testing.T) {
 	mapper := func(in health.HealthStatus) health.HealthStatus {
 		return expected
 	}
-	keyed := store.NewKeyedErrorHealthCheckSource("foo", "bar")
+	keyed := window.MustNewKeyedErrorHealthCheckSource("foo", window.UnhealthyIfAtLeastOneError)
 	keyed.Submit(context.Background(), "foo", werror.Error("err"))
 	source := NewSource(keyed, mapper)
 	status := source.HealthStatus(context.Background())
@@ -44,7 +44,7 @@ func TestSourceNilChecks(t *testing.T) {
 	mapper := func(in health.HealthStatus) health.HealthStatus {
 		return health.HealthStatus{}
 	}
-	keyed := store.NewKeyedErrorHealthCheckSource("foo", "bar")
+	keyed := window.MustNewKeyedErrorHealthCheckSource("foo", window.UnhealthyIfAtLeastOneError)
 	source := NewSource(keyed, nil)
 	assert.Equal(t, source.HealthStatus(context.Background()), health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
