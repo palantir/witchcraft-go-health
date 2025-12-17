@@ -49,9 +49,8 @@ func TestSourceNilChecks(t *testing.T) {
 	assert.Equal(t, source.HealthStatus(context.Background()), health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			"foo": {
-				Type:    "foo",
-				State:   health.New_HealthState(health.HealthState_HEALTHY),
-				Message: toString("bar"),
+				Type:  "foo",
+				State: health.New_HealthState(health.HealthState_HEALTHY),
 			},
 		},
 	})

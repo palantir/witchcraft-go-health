@@ -421,7 +421,7 @@ func TestFromHealthCheckSource(t *testing.T) {
 				return nil
 			},
 		},
-	}, WithGracePeriod(gracePeriod), WithRetryInterval(retryInterval))
+	}, WithGracePeriod(gracePeriod), WithRetryInterval(retryInterval), WithStartupGracePeriod(0))
 
 	// wait until health check has returned healthy and then unhealthy
 	<-doneChan
