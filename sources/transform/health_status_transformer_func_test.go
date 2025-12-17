@@ -57,7 +57,3 @@ func TestSourceNilChecks(t *testing.T) {
 	source = NewSource(nil, mapper)
 	assert.Equal(t, source.HealthStatus(context.Background()), health.HealthStatus{})
 }
-
-func toString(s string) *string {
-	return &s
-}
