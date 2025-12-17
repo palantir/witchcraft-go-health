@@ -17,7 +17,7 @@ package window
 import (
 	"time"
 
-	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
 )
 
 // ErrorMode is an enum for the available behaviors for error based window health check sources.

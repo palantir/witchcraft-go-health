@@ -17,7 +17,7 @@ package reporter
 import (
 	"context"
 
-	"github.com/palantir/witchcraft-go-health/status"
+	"github.com/palantir/witchcraft-go-health/v2/status"
 )
 
 type ComponentName string

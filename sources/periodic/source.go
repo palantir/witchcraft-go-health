@@ -20,9 +20,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-health/sources"
-	"github.com/palantir/witchcraft-go-health/status"
+	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/v2/sources"
+	"github.com/palantir/witchcraft-go-health/v2/status"
 	"github.com/palantir/witchcraft-go-logging/wlog/wapp"
 )
 
