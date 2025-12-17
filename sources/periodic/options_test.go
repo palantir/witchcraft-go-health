@@ -32,8 +32,6 @@ func TestWithInitialPoll(t *testing.T) {
 	defer cancel()
 	periodicCheckWithInitialPoll := NewHealthCheckSource(
 		ctx,
-		time.Minute,
-		time.Second,
 		"CHECK_TYPE",
 		pollAlwaysErr,
 		WithInitialPoll(),
@@ -53,8 +51,6 @@ func TestWithStartupGracePeriod(t *testing.T) {
 	defer cancel()
 	periodicCheckWithInitialPoll := NewHealthCheckSource(
 		ctx,
-		time.Minute,
-		time.Second,
 		"CHECK_TYPE",
 		pollAlwaysErr,
 		WithInitialPoll(),

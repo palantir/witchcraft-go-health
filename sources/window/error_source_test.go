@@ -83,7 +83,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				WithTimeProvider(timeProvider))
 			require.NoError(t, err)
 			for _, err := range testCase.errors {
-				source.Submit(err)
+				source.Submit(context.Background(), err)
 			}
 			timeProvider.RestlessSleep(testCase.timeSinceLastSubmission)
 			actualStatus := source.HealthStatus(context.Background())
@@ -159,7 +159,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 
 			require.NoError(t, err)
 			for _, err := range testCase.errors {
-				source.Submit(err)
+				source.Submit(context.Background(), err)
 			}
 			timeProvider.RestlessSleep(testCase.timeSinceLastSubmission)
 			actualStatus := source.HealthStatus(context.Background())
@@ -183,7 +183,7 @@ func TestHealthyIfNotAllErrorsSource_RequireFullWindow_ErrorInInitialWindow(t *t
 		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
@@ -200,7 +200,7 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_ErrorInInitialAnchored
 		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
 	assert.True(t, ok)
@@ -219,7 +219,7 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairing(t *te
 	assert.NoError(t, err)
 
 	timeProvider.RestlessSleep(2 * windowSize)
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 2)
 
 	healthStatus := source.HealthStatus(context.Background())
@@ -240,9 +240,9 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenEr
 	assert.NoError(t, err)
 
 	timeProvider.RestlessSleep(2 * windowSize)
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 2)
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 
 	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
@@ -250,7 +250,7 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenEr
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 
 	timeProvider.RestlessSleep(windowSize / 2)
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 
 	healthStatus = source.HealthStatus(context.Background())
 	checkResult, ok = healthStatus.Checks[testCheckType]
@@ -270,9 +270,9 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenHe
 	assert.NoError(t, err)
 
 	timeProvider.RestlessSleep(2 * windowSize)
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 2)
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 
 	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
@@ -280,7 +280,7 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingThenHe
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 
 	timeProvider.RestlessSleep(windowSize / 2)
-	source.Submit(nil)
+	source.Submit(context.Background(), nil)
 
 	healthStatus = source.HealthStatus(context.Background())
 	checkResult, ok = healthStatus.Checks[testCheckType]
@@ -300,9 +300,9 @@ func TestHealthyIfNotAllErrorsSource_RepairingGracePeriod_RepairingThenGap(t *te
 	assert.NoError(t, err)
 
 	timeProvider.RestlessSleep(2 * windowSize)
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 2)
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 
 	healthStatus := source.HealthStatus(context.Background())
 	checkResult, ok := healthStatus.Checks[testCheckType]
@@ -327,7 +327,7 @@ func TestHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 	timeProvider.RestlessSleep(windowSize / 4)
 
 	healthStatus := source.HealthStatus(context.Background())
@@ -342,7 +342,7 @@ func TestHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 	assert.True(t, ok)
 	assert.Equal(t, health.HealthState_REPAIRING, checkResult.State.Value())
 
-	source.Submit(werror.ErrorWithContextParams(context.Background(), "an error"))
+	source.Submit(context.Background(), werror.ErrorWithContextParams(context.Background(), "an error"))
 
 	healthStatus = source.HealthStatus(context.Background())
 	checkResult, ok = healthStatus.Checks[testCheckType]
@@ -412,7 +412,7 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 
 			require.NoError(t, err)
 			for _, err := range testCase.errors {
-				source.Submit(err)
+				source.Submit(context.Background(), err)
 			}
 			timeProvider.RestlessSleep(testCase.timeSinceLastSubmission)
 			actualStatus := source.HealthStatus(context.Background())
@@ -500,7 +500,7 @@ func TestHealthyIfAtLeastOneSuccessSource(t *testing.T) {
 
 			require.NoError(t, err)
 			for _, err := range testCase.errors {
-				source.Submit(err)
+				source.Submit(context.Background(), err)
 			}
 			timeProvider.RestlessSleep(testCase.timeSinceLastSubmission)
 			actualStatus := source.HealthStatus(context.Background())
@@ -536,7 +536,7 @@ func TestFailingHealthStateValue(t *testing.T) {
 			require.NoError(t, err)
 
 			// submit the error and validate the health state value
-			source.Submit(werror.ErrorWithContextParams(ctx, "an error"))
+			source.Submit(ctx, werror.ErrorWithContextParams(ctx, "an error"))
 			healthStatus := source.HealthStatus(ctx)
 			checkResult, ok := healthStatus.Checks[testCheckType]
 			assert.True(t, ok)
@@ -557,7 +557,7 @@ func TestHealthStateOverrideWithMaxAge(t *testing.T) {
 		WithTimeProvider(timeProvider))
 	assert.NoError(t, err)
 
-	source.Submit(werror.ErrorWithContextParams(ctx, "an error"))
+	source.Submit(ctx, werror.ErrorWithContextParams(ctx, "an error"))
 
 	// Initial state before maximum error age is reached is expected to be WARNING
 	timeProvider.RestlessSleep(windowSize / 4)

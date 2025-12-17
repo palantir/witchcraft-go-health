@@ -123,7 +123,7 @@ func TestStatusBehavior(t *testing.T) {
 				component, err := reporter.InitializeReadinessComponent(ctx, name)
 				require.NoError(t, err)
 				if componentData.status != 0 {
-					component.SetStatus(componentData.status, componentData.metadata)
+					component.SetStatus(ctx, componentData.status, componentData.metadata)
 				}
 			}
 			respStatus, metadata := reporter.Status()

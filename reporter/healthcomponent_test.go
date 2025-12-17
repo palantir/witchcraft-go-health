@@ -42,13 +42,13 @@ func TestProperInitializing(t *testing.T) {
 
 func TestHealthy(t *testing.T) {
 	component, _ := setup(t)
-	component.Healthy()
+	component.Healthy(context.Background())
 	assert.Equal(t, health.HealthState_HEALTHY, component.Status())
 }
 
 func TestWarningSetting(t *testing.T) {
 	component, healthReporter := setup(t)
-	component.Warning("warning message")
+	component.Warning(context.Background(), "warning message")
 	assert.Equal(t, health.HealthState_WARNING, component.Status())
 	status := healthReporter.HealthStatus(context.TODO())
 	componentStatus, found := status.Checks[validComponent]
@@ -58,7 +58,7 @@ func TestWarningSetting(t *testing.T) {
 
 func TestErrorSetting(t *testing.T) {
 	component, healthReporter := setup(t)
-	component.Error(errors.New("err"))
+	component.Error(context.Background(), errors.New("err"))
 	assert.Equal(t, health.HealthState_ERROR, component.Status())
 	status := healthReporter.HealthStatus(context.TODO())
 	componentStatus, found := status.Checks[validComponent]
@@ -70,6 +70,7 @@ func TestSetHealthAndGetHealthResult(t *testing.T) {
 	message := "err"
 	component, _ := setup(t)
 	component.SetHealth(
+		context.Background(),
 		health.HealthState_TERMINAL,
 		&message,
 		map[string]interface{}{"stack": "trace", "other": errors.New("err2")},
@@ -89,7 +90,7 @@ func TestNonCompliantName(t *testing.T) {
 func TestGetHealthCheckCopy(t *testing.T) {
 	component, _ := setup(t)
 	originalMessage := "originalMessage"
-	component.SetHealth(health.HealthState_HEALTHY, &originalMessage, map[string]interface{}{"originalParamKey": "originalParamValue"})
+	component.SetHealth(context.Background(), health.HealthState_HEALTHY, &originalMessage, map[string]interface{}{"originalParamKey": "originalParamValue"})
 	componentResult := component.GetHealthCheck()
 
 	message := "modifiedMessage"
