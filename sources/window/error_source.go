@@ -28,7 +28,7 @@ import (
 
 // ErrorSubmitter allows components whose functionality dictates a portion of health status to only consume this interface.
 type ErrorSubmitter interface {
-	Submit(error)
+	Submit(ctx context.Context, err error)
 }
 
 // ErrorHealthCheckSource is a health check source with statuses determined by submitted errors.
@@ -108,7 +108,7 @@ func NewErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorMode, 
 }
 
 // Submit submits an error.
-func (e *errorHealthCheckSource) Submit(err error) {
+func (e *errorHealthCheckSource) Submit(ctx context.Context, err error) {
 	e.sourceMutex.Lock()
 	defer e.sourceMutex.Unlock()
 

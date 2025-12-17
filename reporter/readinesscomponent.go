@@ -15,6 +15,8 @@
 package reporter
 
 import (
+	"context"
+
 	"github.com/palantir/witchcraft-go-health/status"
 )
 
@@ -23,7 +25,7 @@ type ComponentName string
 // Component represents an individual readiness check that's owned by the ReadinessReporter.
 type Component interface {
 	status.Source
-	SetStatus(respStatus int, metadata interface{})
+	SetStatus(ctx context.Context, respStatus int, metadata interface{})
 }
 
 type readinessComponent struct {
@@ -36,7 +38,7 @@ func (r *readinessComponent) Status() (respStatus int, metadata interface{}) {
 	return r.status, r.metadata
 }
 
-func (r *readinessComponent) SetStatus(respStatus int, metadata interface{}) {
+func (r *readinessComponent) SetStatus(ctx context.Context, respStatus int, metadata interface{}) {
 	r.status = respStatus
 	r.metadata = metadata
 }

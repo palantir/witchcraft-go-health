@@ -27,7 +27,7 @@ import (
 
 // KeyedErrorSubmitter allows components whose functionality dictates a portion of health status to only consume this interface.
 type KeyedErrorSubmitter interface {
-	Submit(key string, err error)
+	Submit(ctx context.Context, key string, err error)
 }
 
 // KeyedErrorHealthCheckSource is a health check source with statuses determined by submitted key error pairs.
@@ -108,7 +108,7 @@ func NewKeyedErrorHealthCheckSource(checkType health.CheckType, errorMode ErrorM
 }
 
 // Submit submits an item as a key error pair.
-func (k *keyedErrorHealthCheckSource) Submit(key string, err error) {
+func (k *keyedErrorHealthCheckSource) Submit(ctx context.Context, key string, err error) {
 	k.sourceMutex.Lock()
 	defer k.sourceMutex.Unlock()
 

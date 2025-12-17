@@ -43,27 +43,6 @@ type HealthCheckSource struct {
 
 var _ status.HealthCheckSource = &HealthCheckSource{}
 
-// MustNewHealthCheckSourceWithStartupGracePeriod creates a HealthCheckSource with the specified
-// heartbeatTimeout and startupTimeout. The returning HealthCheckResult is of type checkType.
-// Panics if heartbeatTimeout is non-positive or if startupTimeout is negative.
-// Should only be used in instances where the inputs are statically defined and known to be valid.
-// DEPRECATED: please use MustNewHealthCheckSource.
-func MustNewHealthCheckSourceWithStartupGracePeriod(checkType health.CheckType, heartbeatTimeout, startupTimeout time.Duration) *HealthCheckSource {
-	healthCheckSource, err := NewHealthCheckSource(checkType, heartbeatTimeout, WithStartupGracePeriod(startupTimeout))
-	if err != nil {
-		panic(err)
-	}
-	return healthCheckSource
-}
-
-// NewHealthCheckSourceWithStartupGracePeriod creates a HealthCheckSource with the specified
-// heartbeatTimeout and startupTimeout. The returning HealthCheckResult is of type checkType.
-// Returns an error if heartbeatTimeout is non-positive or if startupTimeout is negative.
-// DEPRECATED: please use NewHealthCheckSource.
-func NewHealthCheckSourceWithStartupGracePeriod(checkType health.CheckType, heartbeatTimeout, startupTimeout time.Duration) (*HealthCheckSource, error) {
-	return NewHealthCheckSource(checkType, heartbeatTimeout, WithStartupGracePeriod(startupTimeout))
-}
-
 // MustNewHealthCheckSource creates a HealthCheckSource with the specified
 // heartbeatTimeout and a set of Option modifiers. The returning HealthCheckResult is of type checkType.
 // Panics if inputs are invalid.

@@ -34,7 +34,7 @@ func TestSource(t *testing.T) {
 		return expected
 	}
 	keyed := store.NewKeyedErrorHealthCheckSource("foo", "bar")
-	keyed.Submit("foo", werror.Error("err"))
+	keyed.Submit(context.Background(), "foo", werror.Error("err"))
 	source := NewSource(keyed, mapper)
 	status := source.HealthStatus(context.Background())
 	assert.Equal(t, expected, status)

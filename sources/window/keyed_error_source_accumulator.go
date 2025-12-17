@@ -51,8 +51,8 @@ func (n *defaultKeyedErrorSourceAccumulator) AddHealthCheckSource(healthCheckSou
 	n.allSources = append(n.allSources, healthCheckSource)
 }
 
-func (n *defaultKeyedErrorSourceAccumulator) Submit(key string, err error) {
-	n.keyedErrorHealthCheckSource.Submit(key, err)
+func (n *defaultKeyedErrorSourceAccumulator) Submit(ctx context.Context, key string, err error) {
+	n.keyedErrorHealthCheckSource.Submit(ctx, key, err)
 }
 
 func (n *defaultKeyedErrorSourceAccumulator) HealthStatus(ctx context.Context) health.HealthStatus {
