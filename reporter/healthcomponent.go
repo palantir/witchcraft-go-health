@@ -18,7 +18,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/palantir/witchcraft-go-health/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
 )
 
 var _ HealthComponent = &healthComponent{}
