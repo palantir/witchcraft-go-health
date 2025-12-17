@@ -369,7 +369,7 @@ func TestFromHealthCheckSource(t *testing.T) {
 	retryInterval := 10 * time.Millisecond
 	counter := 0
 
-	source := FromHealthCheckSource(ctx, gracePeriod, retryInterval, Source{
+	source := FromHealthCheckSource(ctx, Source{
 		Checks: map[health.CheckType]CheckFunc{
 			checkType: func(ctx context.Context) (rVal *health.HealthCheckResult) {
 				defer func() {
@@ -421,7 +421,7 @@ func TestFromHealthCheckSource(t *testing.T) {
 				return nil
 			},
 		},
-	})
+	}, WithGracePeriod(gracePeriod), WithRetryInterval(retryInterval))
 
 	// wait until health check has returned healthy and then unhealthy
 	<-doneChan
