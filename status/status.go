@@ -16,9 +16,9 @@ package status
 
 import (
 	"context"
-	"net/http"
-
+	"github.com/palantir/pkg/refreshable/v2"
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
+	"net/http"
 )
 
 var (
@@ -45,10 +45,20 @@ type HealthCheckSource interface {
 }
 
 type combinedHealthCheckSource struct {
-	healthCheckSources []HealthCheckSource
+	healthCheckSources refreshable.Refreshable[[]HealthCheckSource]
 }
 
 func NewCombinedHealthCheckSource(healthCheckSources ...HealthCheckSource) HealthCheckSource {
+	var healthCheckSourceSlice []HealthCheckSource
+	for _, healthCheckSource := range healthCheckSources {
+		healthCheckSourceSlice = append(healthCheckSourceSlice, healthCheckSource)
+	}
+	return &combinedHealthCheckSource{
+		healthCheckSources: refreshable.New(healthCheckSourceSlice),
+	}
+}
+
+func NewCombinedHealthCheckSourceWithRefresh(healthCheckSources refreshable.Refreshable[[]HealthCheckSource]) HealthCheckSource {
 	return &combinedHealthCheckSource{
 		healthCheckSources: healthCheckSources,
 	}
@@ -58,7 +68,7 @@ func (c *combinedHealthCheckSource) HealthStatus(ctx context.Context) health.Hea
 	result := health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{},
 	}
-	for _, healthCheckSource := range c.healthCheckSources {
+	for _, healthCheckSource := range c.healthCheckSources.Current() {
 		if healthCheckSource == nil {
 			continue
 		}
