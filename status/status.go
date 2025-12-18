@@ -16,9 +16,10 @@ package status
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/palantir/pkg/refreshable/v2"
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
-	"net/http"
 )
 
 var (
