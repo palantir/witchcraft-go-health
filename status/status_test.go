@@ -18,6 +18,7 @@ import (
 	"context"
 	"testing"
 
+	"github.com/palantir/pkg/refreshable/v2"
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
 	"github.com/stretchr/testify/assert"
 )
@@ -66,6 +67,49 @@ func TestCombinedHealthCheckSource(t *testing.T) {
 				State: health.New_HealthState(health.HealthState_HEALTHY),
 			},
 			"c": {
+				State: health.New_HealthState(health.HealthState_HEALTHY),
+			},
+		},
+	}, actual)
+}
+
+func TestCombinedHealthCheckSourceWithRefreshable(t *testing.T) {
+	sourceA := &testHealthCheckSource{
+		healthStatus: health.HealthStatus{
+			Checks: map[health.CheckType]health.HealthCheckResult{
+				"a": {
+					State: health.New_HealthState(health.HealthState_HEALTHY),
+				},
+			},
+		},
+	}
+	sourceB := &testHealthCheckSource{
+		healthStatus: health.HealthStatus{
+			Checks: map[health.CheckType]health.HealthCheckResult{
+				"b": {
+					State: health.New_HealthState(health.HealthState_HEALTHY),
+				},
+			},
+		},
+	}
+	sources := refreshable.New([]HealthCheckSource{sourceA})
+	combined := NewCombinedHealthCheckSourceWithRefresh(sources)
+	actual := combined.HealthStatus(context.Background())
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"a": {
+				State: health.New_HealthState(health.HealthState_HEALTHY),
+			},
+		},
+	}, actual)
+	sources.Update([]HealthCheckSource{sourceA, sourceB})
+	actual = combined.HealthStatus(context.Background())
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"a": {
+				State: health.New_HealthState(health.HealthState_HEALTHY),
+			},
+			"b": {
 				State: health.New_HealthState(health.HealthState_HEALTHY),
 			},
 		},
