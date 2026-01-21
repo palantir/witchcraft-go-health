@@ -16,6 +16,7 @@ package status
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/palantir/pkg/refreshable/v2"
@@ -114,4 +115,172 @@ func TestCombinedHealthCheckSourceWithRefreshable(t *testing.T) {
 			},
 		},
 	}, actual)
+}
+
+func TestHealthBasedReadinessSource(t *testing.T) {
+	tests := []struct {
+		name           string
+		healthSources  []HealthCheckSource
+		expectedStatus int
+		expectMetadata bool
+	}{
+		{
+			name: "all checks healthy, deferring or warning returns OK",
+			healthSources: []HealthCheckSource{
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check1": {
+								State: health.New_HealthState(health.HealthState_HEALTHY),
+							},
+						},
+					},
+				},
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check2": {
+								State: health.New_HealthState(health.HealthState_DEFERRING),
+							},
+						},
+					},
+				},
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check3": {
+								State: health.New_HealthState(health.HealthState_WARNING),
+							},
+						},
+					},
+				},
+			},
+			expectedStatus: http.StatusOK,
+			expectMetadata: false,
+		},
+		{
+			name: "mixed ready states returns OK",
+			healthSources: []HealthCheckSource{
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check1": {
+								State: health.New_HealthState(health.HealthState_HEALTHY),
+							},
+							"check2": {
+								State: health.New_HealthState(health.HealthState_DEFERRING),
+							},
+							"check3": {
+								State: health.New_HealthState(health.HealthState_WARNING),
+							},
+						},
+					},
+				},
+			},
+			expectedStatus: http.StatusOK,
+			expectMetadata: false,
+		},
+		{
+			name: "error state returns error status code",
+			healthSources: []HealthCheckSource{
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check1": {
+								State: health.New_HealthState(health.HealthState_ERROR),
+							},
+						},
+					},
+				},
+			},
+			expectedStatus: 522,
+			expectMetadata: true,
+		},
+		{
+			name: "suspended state returns suspended status code",
+			healthSources: []HealthCheckSource{
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check1": {
+								State: health.New_HealthState(health.HealthState_SUSPENDED),
+							},
+						},
+					},
+				},
+			},
+			expectedStatus: 519,
+			expectMetadata: true,
+		},
+		{
+			name: "repairing state returns repairing status code",
+			healthSources: []HealthCheckSource{
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check1": {
+								State: health.New_HealthState(health.HealthState_REPAIRING),
+							},
+						},
+					},
+				},
+			},
+			expectedStatus: 520,
+			expectMetadata: true,
+		},
+		{
+			name: "terminal state returns terminal status code",
+			healthSources: []HealthCheckSource{
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check1": {
+								State: health.New_HealthState(health.HealthState_TERMINAL),
+							},
+						},
+					},
+				},
+			},
+			expectedStatus: 523,
+			expectMetadata: true,
+		},
+		{
+			name: "multiple sources with one non-ready returns error",
+			healthSources: []HealthCheckSource{
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check1": {
+								State: health.New_HealthState(health.HealthState_HEALTHY),
+							},
+						},
+					},
+				},
+				&testHealthCheckSource{
+					healthStatus: health.HealthStatus{
+						Checks: map[health.CheckType]health.HealthCheckResult{
+							"check2": {
+								State: health.New_HealthState(health.HealthState_SUSPENDED),
+							},
+						},
+					},
+				},
+			},
+			expectedStatus: 519,
+			expectMetadata: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			source := HealthBasedReadinessSource(tt.healthSources...)
+			status, metadata := source.Status()
+			assert.Equal(t, tt.expectedStatus, status)
+			if tt.expectMetadata {
+				assert.NotNil(t, metadata)
+			} else {
+				assert.Nil(t, metadata)
+			}
+		})
+	}
 }
