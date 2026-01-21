@@ -273,7 +273,7 @@ func TestHealthBasedReadinessSource(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			source := HealthBasedReadinessSource(tt.healthSources...)
+			source := HealthBasedReadinessSource(refreshable.New(tt.healthSources))
 			status, metadata := source.Status()
 			assert.Equal(t, tt.expectedStatus, status)
 			if tt.expectMetadata {

@@ -113,25 +113,23 @@ func HealthStatusCode(metadata health.HealthStatus) int {
 // health check sources. The readiness status is OK if all health check sources report a healthy
 // state (HEALTHY, DEFERRING, or WARNING). Otherwise, it returns the status code corresponding to
 // the first non-OK health state encountered.
-func HealthBasedReadinessSource(healthSources ...HealthCheckSource) Source {
+func HealthBasedReadinessSource(healthCheckSources refreshable.Refreshable[[]HealthCheckSource]) Source {
 	return &healthBasedReadinessSource{
-		healthSources: healthSources,
+		healthSource: NewCombinedHealthCheckSourceWithRefresh(healthCheckSources),
 	}
 }
 
 type healthBasedReadinessSource struct {
-	healthSources []HealthCheckSource
+	healthSource HealthCheckSource
 }
 
-func (h *healthBasedReadinessSource) Status() (respStatus int, metadata interface{}) {
+func (h *healthBasedReadinessSource) Status() (int, interface{}) {
 	ctx := context.Background()
-	for _, healthSource := range h.healthSources {
-		healthStatus := healthSource.HealthStatus(ctx)
-		for _, check := range healthStatus.Checks {
-			state := check.State.Value()
-			if !slices.Contains(readyHealthStates, state) {
-				return HealthStateStatusCode(state), check
-			}
+	healthStatus := h.healthSource.HealthStatus(ctx)
+	for _, check := range healthStatus.Checks {
+		state := check.State.Value()
+		if !slices.Contains(readyHealthStates, state) {
+			return HealthStateStatusCode(state), check
 		}
 	}
 
