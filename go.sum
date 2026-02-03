@@ -14,8 +14,8 @@ github.com/palantir/pkg/datetime v1.3.0 h1:w+Lk6NNxFLwN51wJsVvIZ8neoYcR3ITYtXRhw
 github.com/palantir/pkg/datetime v1.3.0/go.mod h1:ntQD52iX/eKa2qnALtKT8p1LQTbgxGu0CK5O4PVCgOQ=
 github.com/palantir/pkg/objmatcher v1.2.0 h1:cR0IX2NXAhR1hRFBFUwA7y/+m4CtpXUCm5tabqdvS6I=
 github.com/palantir/pkg/objmatcher v1.2.0/go.mod h1:ekDpUDezSoBcD47CUWo9xbYTGycIkiM2ODvxHCUR+lQ=
-github.com/palantir/pkg/refreshable/v2 v2.4.0 h1:tpHtZeoFw3KGPFtzD4Qqs9BCv4Y1bCqfXqIT19VbpPQ=
-github.com/palantir/pkg/refreshable/v2 v2.4.0/go.mod h1:0Og1iRoyMOHpjjk5wBuRhgazUbqLTo8KfdqJe1h9+0g=
+github.com/palantir/pkg/refreshable/v2 v2.5.0 h1:KRPRsVpEBgYbv0S+OGDARsIgi5OC6JOzxMQRmCFJyZc=
+github.com/palantir/pkg/refreshable/v2 v2.5.0/go.mod h1:0Og1iRoyMOHpjjk5wBuRhgazUbqLTo8KfdqJe1h9+0g=
 github.com/palantir/pkg/safejson v1.2.0 h1:mNARH/UdpeDjHSUujUYXSqe4Rclul53xle2CLm6UG34=
 github.com/palantir/pkg/safejson v1.2.0/go.mod h1:Pmxy4EUrfp5sSji5IhNySUKhEyaZw85SoOzag/lzsYg=
 github.com/palantir/pkg/safelong v1.3.0 h1:0PL39zwIPrGjGaEK1Lg7uqakTakB00dQwVf0LsowW0Q=
