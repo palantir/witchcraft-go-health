@@ -10,8 +10,8 @@ github.com/openzipkin/zipkin-go v0.4.3 h1:9EGwpqkgnwdEIJ+Od7QVSEIH+ocmm5nPat0G7s
 github.com/openzipkin/zipkin-go v0.4.3/go.mod h1:M9wCJZFWCo2RiY+o1eBCEMe0Dp2S5LDHcMZmk3RmK7c=
 github.com/palantir/pkg v1.1.0 h1:0EhrSUP8oeeh3MUvk7V/UU7WmsN1UiJNTvNj0sN9Cpo=
 github.com/palantir/pkg v1.1.0/go.mod h1:KC9srP/9ssWRxBxFCIqhUGC4Jt7OJkWRz0Iqehup1/c=
-github.com/palantir/pkg/datetime v1.3.0 h1:w+Lk6NNxFLwN51wJsVvIZ8neoYcR3ITYtXRhwI1Qyt0=
-github.com/palantir/pkg/datetime v1.3.0/go.mod h1:ntQD52iX/eKa2qnALtKT8p1LQTbgxGu0CK5O4PVCgOQ=
+github.com/palantir/pkg/datetime v1.4.0 h1:yh1j4WZVtHpvK+IsRVuQKbKgJSg7RLRhxmG8QAXPysI=
+github.com/palantir/pkg/datetime v1.4.0/go.mod h1:SfUHKWRJRCynkm9SiW86W3iDtkf7mvBDlEJyLg4ayvM=
 github.com/palantir/pkg/objmatcher v1.2.0 h1:cR0IX2NXAhR1hRFBFUwA7y/+m4CtpXUCm5tabqdvS6I=
 github.com/palantir/pkg/objmatcher v1.2.0/go.mod h1:ekDpUDezSoBcD47CUWo9xbYTGycIkiM2ODvxHCUR+lQ=
 github.com/palantir/pkg/refreshable/v2 v2.7.1 h1:GunC+jDPkCWf7KEmdxPKCGWAeG+DmTAL3UUR1e43AJc=
