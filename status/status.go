@@ -16,6 +16,7 @@ package status
 
 import (
 	"context"
+	"maps"
 	"net/http"
 	"slices"
 
@@ -81,7 +82,8 @@ func (c *combinedHealthCheckSource) HealthStatus(ctx context.Context) health.Hea
 		if healthCheckSource == nil {
 			continue
 		}
-		for k, v := range healthCheckSource.HealthStatus(ctx).Checks {
+		checks := maps.Clone(healthCheckSource.HealthStatus(ctx).Checks)
+		for k, v := range checks {
 			result.Checks[k] = v
 		}
 	}
