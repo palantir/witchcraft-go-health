@@ -129,7 +129,7 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 					checkType: {
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
-						Message: stringPtr("No successful checks during 1m0s grace period"),
+						Message: new("No successful checks during 1m0s grace period"),
 					},
 				},
 			},
@@ -163,7 +163,7 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 					checkType: {
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_REPAIRING),
-						Message: stringPtr("No completed checks during 1m0s grace period"),
+						Message: new("No completed checks during 1m0s grace period"),
 					},
 				},
 			},
@@ -197,7 +197,7 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 					checkType: {
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
-						Message: stringPtr("No completed checks during 1m0s grace period"),
+						Message: new("No completed checks during 1m0s grace period"),
 					},
 				},
 			},
@@ -216,7 +216,7 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 						lastResult: &health.HealthCheckResult{
 							Type:    checkType,
 							State:   health.New_HealthState(health.HealthState_ERROR),
-							Message: stringPtr("something went wrong"),
+							Message: new("something went wrong"),
 						},
 						lastResultTime: time.Now().Add(-3 * time.Minute),
 						lastSuccess: &health.HealthCheckResult{
@@ -232,7 +232,7 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 					checkType: {
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
-						Message: stringPtr("No completed checks during 1m0s grace period: something went wrong"),
+						Message: new("No completed checks during 1m0s grace period: something went wrong"),
 					},
 				},
 			},
@@ -252,7 +252,7 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 					checkType: {
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_REPAIRING),
-						Message: stringPtr("Check has not yet run"),
+						Message: new("Check has not yet run"),
 					},
 				},
 			},
@@ -303,7 +303,7 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 					otherCheckType: {
 						Type:    otherCheckType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
-						Message: stringPtr("No successful checks during 1m0s grace period"),
+						Message: new("No successful checks during 1m0s grace period"),
 					},
 				},
 			},
@@ -324,12 +324,12 @@ func TestHealthCheckSource_HealthStatus(t *testing.T) {
 					checkType: {
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_REPAIRING),
-						Message: stringPtr("Check has not yet run"),
+						Message: new("Check has not yet run"),
 					},
 					otherCheckType: {
 						Type:    otherCheckType,
 						State:   health.New_HealthState(health.HealthState_REPAIRING),
-						Message: stringPtr("Check has not yet run"),
+						Message: new("Check has not yet run"),
 					},
 				},
 			},
@@ -362,8 +362,7 @@ func TestFromHealthCheckSource(t *testing.T) {
 	pauseChan := make(chan struct{})
 	defer close(pauseChan)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 
 	gracePeriod := 100 * time.Millisecond
 	retryInterval := 10 * time.Millisecond
@@ -382,8 +381,8 @@ func TestFromHealthCheckSource(t *testing.T) {
 					return &health.HealthCheckResult{
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_HEALTHY),
-						Message: stringPtr("Healthy state"),
-						Params: map[string]interface{}{
+						Message: new("Healthy state"),
+						Params: map[string]any{
 							"counter": counter,
 						},
 					}
@@ -392,8 +391,8 @@ func TestFromHealthCheckSource(t *testing.T) {
 					return &health.HealthCheckResult{
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
-						Message: stringPtr("Error state"),
-						Params: map[string]interface{}{
+						Message: new("Error state"),
+						Params: map[string]any{
 							"counter": counter,
 						},
 					}
@@ -407,8 +406,8 @@ func TestFromHealthCheckSource(t *testing.T) {
 					return &health.HealthCheckResult{
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
-						Message: stringPtr("Error state"),
-						Params: map[string]interface{}{
+						Message: new("Error state"),
+						Params: map[string]any{
 							"counter": counter,
 						},
 					}
@@ -433,8 +432,8 @@ func TestFromHealthCheckSource(t *testing.T) {
 		checkType: {
 			Type:    checkType,
 			State:   health.New_HealthState(health.HealthState_HEALTHY),
-			Message: stringPtr("Healthy state"),
-			Params: map[string]interface{}{
+			Message: new("Healthy state"),
+			Params: map[string]any{
 				"counter": 0,
 			},
 		},
@@ -451,8 +450,8 @@ func TestFromHealthCheckSource(t *testing.T) {
 		checkType: {
 			Type:    checkType,
 			State:   health.New_HealthState(health.HealthState_ERROR),
-			Message: stringPtr("No successful checks during 100ms grace period: Error state"),
-			Params: map[string]interface{}{
+			Message: new("No successful checks during 100ms grace period: Error state"),
+			Params: map[string]any{
 				"counter": 2,
 			},
 		},
@@ -467,8 +466,8 @@ func TestFromHealthCheckSource(t *testing.T) {
 		checkType: {
 			Type:    checkType,
 			State:   health.New_HealthState(health.HealthState_ERROR),
-			Message: stringPtr("No completed checks during 100ms grace period: Error state"),
-			Params: map[string]interface{}{
+			Message: new("No completed checks during 100ms grace period: Error state"),
+			Params: map[string]any{
 				"counter": 2,
 			},
 		},

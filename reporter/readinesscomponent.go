@@ -25,20 +25,20 @@ type ComponentName string
 // Component represents an individual readiness check that's owned by the ReadinessReporter.
 type Component interface {
 	status.Source
-	SetStatus(ctx context.Context, respStatus int, metadata interface{})
+	SetStatus(ctx context.Context, respStatus int, metadata any)
 }
 
 type readinessComponent struct {
 	name     ComponentName
 	status   int
-	metadata interface{}
+	metadata any
 }
 
-func (r *readinessComponent) Status() (respStatus int, metadata interface{}) {
+func (r *readinessComponent) Status() (respStatus int, metadata any) {
 	return r.status, r.metadata
 }
 
-func (r *readinessComponent) SetStatus(ctx context.Context, respStatus int, metadata interface{}) {
+func (r *readinessComponent) SetStatus(ctx context.Context, respStatus int, metadata any) {
 	r.status = respStatus
 	r.metadata = metadata
 }

@@ -24,7 +24,7 @@ import (
 // ItemWithTimestamp is a struct that stores an item and the time it was submitted.
 type ItemWithTimestamp struct {
 	Time time.Time
-	Item interface{}
+	Item any
 }
 
 // TimeWindowedStore is a thread-safe struct that stores submitted items
@@ -65,7 +65,7 @@ func (t *TimeWindowedStore) pruneExpiredEntries() {
 }
 
 // Submit prunes all out-of-date items out of memory and then adds a new one.
-func (t *TimeWindowedStore) Submit(item interface{}) {
+func (t *TimeWindowedStore) Submit(item any) {
 	t.itemsMutex.Lock()
 	defer t.itemsMutex.Unlock()
 

@@ -44,13 +44,13 @@ func NewReadinessReporter() Reporter {
 	}
 }
 
-func (r *readinessReporter) Status() (respStatus int, metadata interface{}) {
+func (r *readinessReporter) Status() (respStatus int, metadata any) {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 
 	// Attempt to return the highest "unready" response code. If none exist, return ready.
 	highestUnreadyRespStatus := 0
-	aggregatedMetadata := make(map[ComponentName]interface{})
+	aggregatedMetadata := make(map[ComponentName]any)
 	for name, component := range r.readinessComponents {
 		respStatus, metadata := component.Status()
 		// Response codes within [200, 399] are considered ready.

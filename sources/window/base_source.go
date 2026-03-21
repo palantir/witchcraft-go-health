@@ -25,7 +25,7 @@ import (
 
 // ItemSubmitter allows components of code whose functionality dictates health status to just consume this single-method interface.
 type ItemSubmitter interface {
-	Submit(ctx context.Context, item interface{})
+	Submit(ctx context.Context, item any)
 }
 
 // BaseHealthCheckSource determines health status based on user-submitted items.
@@ -72,7 +72,7 @@ func NewBaseHealthCheckSource(windowSize time.Duration, itemsToCheckFn ItemsToCh
 }
 
 // Submit submits an item.
-func (b *baseHealthCheckSource) Submit(ctx context.Context, item interface{}) {
+func (b *baseHealthCheckSource) Submit(ctx context.Context, item any) {
 	b.timeWindowedStore.Submit(item)
 }
 

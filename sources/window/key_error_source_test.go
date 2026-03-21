@@ -67,7 +67,7 @@ func TestKeyedUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "Error #1 for key 1",
 					"2": "Error #1 for key 2",
 				},
@@ -85,7 +85,7 @@ func TestKeyedUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
 					"3": "Error #1 for key 3",
@@ -161,7 +161,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
 				},
@@ -179,7 +179,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_OutsideStartWindow(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
 					"3": "Error #1 for key 3",
@@ -247,7 +247,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
 				},
@@ -265,7 +265,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_InsideStartWindow(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
 					"3": "Error #1 for key 3",
@@ -319,7 +319,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_InitialWindowErrorsReturnRepairing(t *
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 				},
 			},
@@ -335,7 +335,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_InitialWindowErrorsReturnRepairing(t *
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 				},
 			},
@@ -369,7 +369,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 				},
 			},
@@ -385,7 +385,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
 				},
@@ -401,7 +401,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"2": "error for key: 2",
 				},
 			},
@@ -443,7 +443,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 				},
 			},
@@ -458,7 +458,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
 				},
@@ -474,7 +474,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"2": "error for key: 2",
 				},
 			},
@@ -516,7 +516,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 				},
 			},
@@ -532,7 +532,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
 				},
@@ -550,7 +550,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
 				},
@@ -566,7 +566,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_RepairingGracePeriod_GapThenRepairingT
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 				},
 			},
@@ -596,7 +596,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 				},
 			},
@@ -611,7 +611,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 				},
 			},
@@ -626,7 +626,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "error for key: 1",
 					"2": "error for key: 2",
 				},
@@ -642,7 +642,7 @@ func TestKeyedHealthyIfNotAllErrorsSource_MaximumErrorAge(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"2": "error for key: 2",
 				},
 			},
@@ -686,7 +686,7 @@ func TestKeyedUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"2": "Error #1 for key 2",
 				},
 			},
@@ -709,7 +709,7 @@ func TestKeyedUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "Error #2 for key 1",
 				},
 			},
@@ -738,7 +738,7 @@ func TestKeyedUnhealthyIfNoRecentErrorsSource(t *testing.T) {
 				Type:    testCheckType,
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &checkMessage,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"1": "Error #1 for key 1",
 					"2": "Error #2 for key 2",
 					"3": "Error #1 for key 3",

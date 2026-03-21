@@ -16,6 +16,7 @@ package window
 
 import (
 	"context"
+	"maps"
 	"sync"
 
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
@@ -62,9 +63,7 @@ func (n *defaultKeyedErrorSourceAccumulator) HealthStatus(ctx context.Context) h
 		Checks: map[health.CheckType]health.HealthCheckResult{},
 	}
 	for _, healthCheckSource := range n.allSources {
-		for k, v := range healthCheckSource.HealthStatus(ctx).Checks {
-			result.Checks[k] = v
-		}
+		maps.Copy(result.Checks, healthCheckSource.HealthStatus(ctx).Checks)
 	}
 	return result
 

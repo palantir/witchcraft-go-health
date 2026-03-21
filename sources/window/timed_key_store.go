@@ -22,7 +22,7 @@ import (
 type TimedKey struct {
 	Key     string
 	Time    time.Time
-	Payload interface{}
+	Payload any
 }
 
 // TimedKeys is a list of TimedKey objects.
@@ -43,7 +43,7 @@ func (t TimedKeys) Keys() []string {
 type TimedKeyStore interface {
 	// Put adds a new TimedKey to the end of the list with the timestamp set to the current time.
 	// Adding an already present key will cause the current TimedKey to be updated to the current and to be sent to the end of the list.
-	Put(key string, payload interface{})
+	Put(key string, payload any)
 	// Delete removes a TimedKey from the list. If the key doesn't exist, it is a no op.
 	// The second return value returns whether or not the key existed within the store.
 	Delete(key string) bool
@@ -112,7 +112,7 @@ func (t *timedKeyStore) PruneKeysAboveAge(maxAge time.Duration) {
 	}
 }
 
-func (t *timedKeyStore) Put(key string, payload interface{}) {
+func (t *timedKeyStore) Put(key string, payload any) {
 	_ = t.Delete(key)
 	timedKey := TimedKey{
 		Key:     key,

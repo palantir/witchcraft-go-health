@@ -25,7 +25,7 @@ import (
 
 type componentTestData struct {
 	status   int
-	metadata interface{}
+	metadata any
 }
 
 func TestReadinessComponentOperations(t *testing.T) {
@@ -48,13 +48,13 @@ func TestStatusBehavior(t *testing.T) {
 		name               string
 		components         map[ComponentName]componentTestData
 		expectedRespStatus int
-		expectedMetadata   interface{}
+		expectedMetadata   any
 	}{
 		{
 			name:               "reporter with no components defaults to ready",
 			components:         map[ComponentName]componentTestData{},
 			expectedRespStatus: http.StatusOK,
-			expectedMetadata:   map[ComponentName]interface{}{},
+			expectedMetadata:   map[ComponentName]any{},
 		},
 		{
 			name: "component defaults to unready",
@@ -62,7 +62,7 @@ func TestStatusBehavior(t *testing.T) {
 				"test-component": {},
 			},
 			expectedRespStatus: http.StatusInternalServerError,
-			expectedMetadata: map[ComponentName]interface{}{
+			expectedMetadata: map[ComponentName]any{
 				"test-component": nil,
 			},
 		},
@@ -75,7 +75,7 @@ func TestStatusBehavior(t *testing.T) {
 				},
 			},
 			expectedRespStatus: http.StatusOK,
-			expectedMetadata: map[ComponentName]interface{}{
+			expectedMetadata: map[ComponentName]any{
 				"test-component": "metadata",
 			},
 		},
@@ -92,7 +92,7 @@ func TestStatusBehavior(t *testing.T) {
 				},
 			},
 			expectedRespStatus: http.StatusInternalServerError,
-			expectedMetadata: map[ComponentName]interface{}{
+			expectedMetadata: map[ComponentName]any{
 				"test-component":    "metadata",
 				"unready-component": "unready-metadata",
 			},
@@ -110,7 +110,7 @@ func TestStatusBehavior(t *testing.T) {
 				},
 			},
 			expectedRespStatus: http.StatusBadGateway,
-			expectedMetadata: map[ComponentName]interface{}{
+			expectedMetadata: map[ComponentName]any{
 				"internal-server-error-component": "internal-server-error",
 				"bad-gateway-component":           "bad-gateway",
 			},
