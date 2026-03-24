@@ -16,6 +16,7 @@ package tree
 
 import (
 	"context"
+	"maps"
 
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
 	"github.com/palantir/witchcraft-go-health/v2/status"
@@ -77,9 +78,7 @@ func (n *healthCheckSourceTreeNode) HealthStatus(ctx context.Context) health.Hea
 		return ownHealthStatus
 	}
 	healthStatusFromChildSources := n.combinedChildrenHealthCheckSource.HealthStatus(ctx)
-	for checkType, checkResult := range healthStatusFromChildSources.Checks {
-		ownHealthStatus.Checks[checkType] = checkResult
-	}
+	maps.Copy(ownHealthStatus.Checks, healthStatusFromChildSources.Checks)
 	return ownHealthStatus
 }
 

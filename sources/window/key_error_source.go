@@ -140,7 +140,7 @@ func (k *keyedErrorHealthCheckSource) HealthStatus(ctx context.Context) health.H
 	k.successStore.PruneKeysAboveAge(k.windowSize)
 	k.gapEndTimeStore.PruneKeysAboveAge(k.repairingGracePeriod + k.windowSize)
 
-	params := make(map[string]interface{})
+	params := make(map[string]any)
 	shouldError := false
 	for _, errItem := range k.errorStore.List() {
 		switch k.errorMode {
@@ -174,7 +174,7 @@ func (k *keyedErrorHealthCheckSource) HealthStatus(ctx context.Context) health.H
 	}
 }
 
-func (k *keyedErrorHealthCheckSource) getFailureResult(shouldError bool, params map[string]interface{}) health.HealthCheckResult {
+func (k *keyedErrorHealthCheckSource) getFailureResult(shouldError bool, params map[string]any) health.HealthCheckResult {
 	healthCheckResult := health.HealthCheckResult{
 		Type:    k.checkType,
 		State:   health.New_HealthState(health.HealthState_REPAIRING),

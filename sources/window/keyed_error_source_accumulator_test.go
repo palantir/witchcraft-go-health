@@ -33,7 +33,7 @@ func TestKeyedErrorSourceAccumulatorCanError(t *testing.T) {
 				Type:    "check",
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &str,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"key": "uhoh",
 				},
 			},
@@ -77,7 +77,7 @@ func TestKeyedErrorSourceAccumulatorCanAdd(t *testing.T) {
 				Type:    "check2",
 				State:   health.New_HealthState(health.HealthState_ERROR),
 				Message: &str,
-				Params: map[string]interface{}{
+				Params: map[string]any{
 					"key": "uhoh",
 				},
 			},

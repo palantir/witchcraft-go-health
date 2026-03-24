@@ -16,6 +16,7 @@ package reporter
 
 import (
 	"context"
+	"maps"
 	"sync"
 
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
@@ -28,7 +29,7 @@ type HealthComponent interface {
 	Healthy(ctx context.Context)
 	Warning(ctx context.Context, message string)
 	Error(ctx context.Context, err error)
-	SetHealth(ctx context.Context, healthState health.HealthState_Value, message *string, params map[string]interface{})
+	SetHealth(ctx context.Context, healthState health.HealthState_Value, message *string, params map[string]any)
 	Status() health.HealthState_Value
 	GetHealthCheck() health.HealthCheckResult
 }
@@ -39,7 +40,7 @@ type healthComponent struct {
 	name    health.CheckType
 	state   health.HealthState
 	message *string
-	params  map[string]interface{}
+	params  map[string]any
 }
 
 func (r *healthComponent) Healthy(ctx context.Context) {
@@ -55,7 +56,7 @@ func (r *healthComponent) Error(ctx context.Context, err error) {
 	r.SetHealth(ctx, health.HealthState_ERROR, &errorString, nil)
 }
 
-func (r *healthComponent) SetHealth(ctx context.Context, healthState health.HealthState_Value, message *string, params map[string]interface{}) {
+func (r *healthComponent) SetHealth(ctx context.Context, healthState health.HealthState_Value, message *string, params map[string]any) {
 	r.Lock()
 	defer r.Unlock()
 
@@ -78,15 +79,13 @@ func (r *healthComponent) GetHealthCheck() health.HealthCheckResult {
 	defer r.Unlock()
 
 	var message *string
-	params := make(map[string]interface{}, len(r.params))
+	params := make(map[string]any, len(r.params))
 
 	if r.message != nil {
 		messageCopy := *r.message
 		message = &messageCopy
 	}
-	for key, value := range r.params {
-		params[key] = value
-	}
+	maps.Copy(params, r.params)
 
 	return health.HealthCheckResult{
 		Type:    r.name,

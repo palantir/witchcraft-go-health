@@ -73,12 +73,12 @@ func TestSetHealthAndGetHealthResult(t *testing.T) {
 		context.Background(),
 		health.HealthState_TERMINAL,
 		&message,
-		map[string]interface{}{"stack": "trace", "other": errors.New("err2")},
+		map[string]any{"stack": "trace", "other": errors.New("err2")},
 	)
 	assert.Equal(t, health.HealthState_TERMINAL, component.Status())
 	result := component.GetHealthCheck()
 	assert.Equal(t, "err", *result.Message)
-	assert.Equal(t, map[string]interface{}{"stack": "trace", "other": errors.New("err2")}, result.Params)
+	assert.Equal(t, map[string]any{"stack": "trace", "other": errors.New("err2")}, result.Params)
 }
 
 func TestNonCompliantName(t *testing.T) {
@@ -90,7 +90,7 @@ func TestNonCompliantName(t *testing.T) {
 func TestGetHealthCheckCopy(t *testing.T) {
 	component, _ := setup(t)
 	originalMessage := "originalMessage"
-	component.SetHealth(context.Background(), health.HealthState_HEALTHY, &originalMessage, map[string]interface{}{"originalParamKey": "originalParamValue"})
+	component.SetHealth(context.Background(), health.HealthState_HEALTHY, &originalMessage, map[string]any{"originalParamKey": "originalParamValue"})
 	componentResult := component.GetHealthCheck()
 
 	message := "modifiedMessage"

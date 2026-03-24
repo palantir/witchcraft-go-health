@@ -20,7 +20,7 @@ import (
 )
 
 // UnhealthyHealthCheckResult returns an unhealthy health check result with type checkType and message message.
-func UnhealthyHealthCheckResult(checkType health.CheckType, message string, params map[string]interface{}) health.HealthCheckResult {
+func UnhealthyHealthCheckResult(checkType health.CheckType, message string, params map[string]any) health.HealthCheckResult {
 	return health.HealthCheckResult{
 		Type:    checkType,
 		State:   health.New_HealthState(health.HealthState_ERROR),
@@ -30,7 +30,7 @@ func UnhealthyHealthCheckResult(checkType health.CheckType, message string, para
 }
 
 // RepairingHealthCheckResult returns an repairing health check result with type checkType and message message.
-func RepairingHealthCheckResult(checkType health.CheckType, message string, params map[string]interface{}) health.HealthCheckResult {
+func RepairingHealthCheckResult(checkType health.CheckType, message string, params map[string]any) health.HealthCheckResult {
 	return health.HealthCheckResult{
 		Type:    checkType,
 		State:   health.New_HealthState(health.HealthState_REPAIRING),
@@ -40,7 +40,7 @@ func RepairingHealthCheckResult(checkType health.CheckType, message string, para
 }
 
 // WarningHealthCheckResult returns a warning health check result with type checkType and message message.
-func WarningHealthCheckResult(checkType health.CheckType, message string, params map[string]interface{}) health.HealthCheckResult {
+func WarningHealthCheckResult(checkType health.CheckType, message string, params map[string]any) health.HealthCheckResult {
 	return health.HealthCheckResult{
 		Type:    checkType,
 		State:   health.New_HealthState(health.HealthState_WARNING),
@@ -58,7 +58,7 @@ func HealthyHealthCheckResult(checkType health.CheckType) health.HealthCheckResu
 }
 
 // SafeParamsFromError returns the safeParam map from the given error
-func SafeParamsFromError(err error) map[string]interface{} {
+func SafeParamsFromError(err error) map[string]any {
 	safeParams, _ := werror.ParamsFromError(err)
 	return safeParams
 }

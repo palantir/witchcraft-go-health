@@ -172,7 +172,7 @@ func (e *errorHealthCheckSource) HealthStatus(ctx context.Context) health.Health
 }
 
 func (e *errorHealthCheckSource) getFailureResult(err error) health.HealthCheckResult {
-	params := map[string]interface{}{
+	params := map[string]any{
 		"error": err.Error(),
 	}
 	healthCheckResult := health.HealthCheckResult{

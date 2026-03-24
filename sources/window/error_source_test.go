@@ -62,7 +62,7 @@ func TestUnhealthyIfAtLeastOneErrorSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 				nil,
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]any{
 				"error": "Error #2",
 			}),
 		},
@@ -136,7 +136,7 @@ func TestHealthyIfNotAllErrorsSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #1"),
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]any{
 				"error": "Error #2",
 			}),
 		},
@@ -390,7 +390,7 @@ func TestHealthyIfNoRecentErrorsSource(t *testing.T) {
 				nil,
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]any{
 				"error": "Error #2",
 			}),
 		},
@@ -437,7 +437,7 @@ func TestHealthyIfAtLeastOneSuccessSource(t *testing.T) {
 		{
 			name:   "unhealthy when there are no items",
 			errors: nil,
-			expectedCheck: sources.RepairingHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+			expectedCheck: sources.RepairingHealthCheckResult(testCheckType, checkMessage, map[string]any{
 				"error": "no successful results within window",
 			}),
 		},
@@ -447,7 +447,7 @@ func TestHealthyIfAtLeastOneSuccessSource(t *testing.T) {
 				nil,
 			},
 			timeSinceLastSubmission: 70 * time.Minute,
-			expectedCheck: sources.RepairingHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+			expectedCheck: sources.RepairingHealthCheckResult(testCheckType, checkMessage, map[string]any{
 				"error": "no successful results within window",
 			}),
 		},
@@ -457,7 +457,7 @@ func TestHealthyIfAtLeastOneSuccessSource(t *testing.T) {
 				werror.ErrorWithContextParams(context.Background(), "Error #1"),
 				werror.ErrorWithContextParams(context.Background(), "Error #2", werror.SafeParam("foo", "bar")),
 			},
-			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]interface{}{
+			expectedCheck: sources.UnhealthyHealthCheckResult(testCheckType, checkMessage, map[string]any{
 				"error": "Error #2",
 			}),
 		},

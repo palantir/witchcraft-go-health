@@ -16,6 +16,7 @@ package status
 
 import (
 	"context"
+	"maps"
 	"net/http"
 	"slices"
 
@@ -44,7 +45,7 @@ var (
 
 // Source provides status that should be sent as a response.
 type Source interface {
-	Status() (respStatus int, metadata interface{})
+	Status() (respStatus int, metadata any)
 }
 
 // HealthCheckSource provides the SLS health status that should be sent as a response.
@@ -81,9 +82,7 @@ func (c *combinedHealthCheckSource) HealthStatus(ctx context.Context) health.Hea
 		if healthCheckSource == nil {
 			continue
 		}
-		for k, v := range healthCheckSource.HealthStatus(ctx).Checks {
-			result.Checks[k] = v
-		}
+		maps.Copy(result.Checks, healthCheckSource.HealthStatus(ctx).Checks)
 	}
 	return result
 }
@@ -123,7 +122,7 @@ type healthBasedReadinessSource struct {
 	healthSource HealthCheckSource
 }
 
-func (h *healthBasedReadinessSource) Status() (int, interface{}) {
+func (h *healthBasedReadinessSource) Status() (int, any) {
 	ctx := context.Background()
 	healthStatus := h.healthSource.HealthStatus(ctx)
 	for _, check := range healthStatus.Checks {

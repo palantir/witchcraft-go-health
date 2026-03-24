@@ -28,8 +28,7 @@ func TestWithInitialPoll(t *testing.T) {
 	var pollAlwaysErr = func() error {
 		return fmt.Errorf("error")
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	periodicCheckWithInitialPoll := NewHealthCheckSource(
 		ctx,
 		"CHECK_TYPE",
@@ -47,8 +46,7 @@ func TestWithStartupGracePeriod(t *testing.T) {
 	var pollAlwaysErr = func() error {
 		return fmt.Errorf("error")
 	}
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	ctx := t.Context()
 	periodicCheckWithInitialPoll := NewHealthCheckSource(
 		ctx,
 		"CHECK_TYPE",

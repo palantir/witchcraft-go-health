@@ -92,7 +92,7 @@ func (h *healthCheckSource) HealthStatus(ctx context.Context) health.HealthStatu
 			results = append(results, health.HealthCheckResult{
 				Type:    checkType,
 				State:   health.New_HealthState(health.HealthState_REPAIRING),
-				Message: stringPtr("Check has not yet run"),
+				Message: new("Check has not yet run"),
 			})
 			continue
 		}
@@ -102,10 +102,10 @@ func (h *healthCheckSource) HealthStatus(ctx context.Context) health.HealthStatu
 			result = *checkState.lastSuccess
 		case time.Since(checkState.lastResultTime) <= h.gracePeriod:
 			result = *checkState.lastResult
-			result.Message = stringPtr(wrap(result.Message, fmt.Sprintf("No successful checks during %s grace period", h.gracePeriod.String())))
+			result.Message = new(wrap(result.Message, fmt.Sprintf("No successful checks during %s grace period", h.gracePeriod.String())))
 		default:
 			result = *checkState.lastResult
-			result.Message = stringPtr(wrap(result.Message, fmt.Sprintf("No completed checks during %s grace period", h.gracePeriod.String())))
+			result.Message = new(wrap(result.Message, fmt.Sprintf("No completed checks during %s grace period", h.gracePeriod.String())))
 			// Mark REPAIRING if we were healthy before expiration.
 			if result.State.Value() == health.HealthState_HEALTHY {
 				result.State = health.New_HealthState(health.HealthState_REPAIRING)
@@ -202,7 +202,7 @@ func newDefaultHealthCheckSource(checkType health.CheckType, poll func() error) 
 					return &health.HealthCheckResult{
 						Type:    checkType,
 						State:   health.New_HealthState(health.HealthState_ERROR),
-						Message: stringPtr(err.Error()),
+						Message: new(err.Error()),
 						Params:  sources.SafeParamsFromError(err),
 					}
 				}
@@ -220,8 +220,4 @@ func wrap(baseStringPtr *string, prependStr string) string {
 		return prependStr
 	}
 	return prependStr + ": " + *baseStringPtr
-}
-
-func stringPtr(s string) *string {
-	return &s
 }
