@@ -221,8 +221,3 @@ func wrap(baseStringPtr *string, prependStr string) string {
 	}
 	return prependStr + ": " + *baseStringPtr
 }
-
-//go:fix inline
-func stringPtr(s string) *string {
-	return new(s)
-}
