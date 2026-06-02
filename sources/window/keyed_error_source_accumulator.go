@@ -20,6 +20,8 @@ import (
 	"sync"
 
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/v2/sources"
+	"github.com/palantir/witchcraft-go-health/v2/sources/tree"
 	"github.com/palantir/witchcraft-go-health/v2/status"
 )
 
@@ -33,32 +35,59 @@ type KeyedErrorSourceAccumulator interface {
 }
 
 type defaultKeyedErrorSourceAccumulator struct {
-	mutex                       sync.Mutex
 	keyedErrorHealthCheckSource KeyedErrorHealthCheckSource
 	allSources                  []status.HealthCheckSource
 }
 
+type defaultKeyedErrorSourceAccumulatorParent struct {
+	mutex                              sync.Mutex
+	defaultKeyedErrorSourceAccumulator *defaultKeyedErrorSourceAccumulator
+	rootedHealthCheck                  status.HealthCheckSource
+}
+
 // NewDefaultKeyedErrorSourceAccumulator is the default implementation of KeyedErrorSourceAccumulator
 func NewDefaultKeyedErrorSourceAccumulator(keyedErrorHealthCheckSource KeyedErrorHealthCheckSource) KeyedErrorSourceAccumulator {
-	return &defaultKeyedErrorSourceAccumulator{
+	defaultKeyedErrorSourceAccumulator := &defaultKeyedErrorSourceAccumulator{
 		keyedErrorHealthCheckSource: keyedErrorHealthCheckSource,
 		allSources:                  []status.HealthCheckSource{keyedErrorHealthCheckSource},
 	}
+	staticParent := sources.StaticHealthCheckSource(health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"ALWAYS_HEALTHY": sources.HealthyHealthCheckResult("ALWAYS_HEALTHY"),
+		},
+	})
+	defaultKeyedErrorSourceAccumulatorParent := &defaultKeyedErrorSourceAccumulatorParent{
+		defaultKeyedErrorSourceAccumulator: defaultKeyedErrorSourceAccumulator,
+	}
+	defaultKeyedErrorSourceAccumulatorParent.RootUnderTree(staticParent)
+	return defaultKeyedErrorSourceAccumulatorParent
 }
 
-func (n *defaultKeyedErrorSourceAccumulator) AddHealthCheckSource(healthCheckSource status.HealthCheckSource) {
+func (n *defaultKeyedErrorSourceAccumulatorParent) AddHealthCheckSource(healthCheckSource status.HealthCheckSource) {
 	n.mutex.Lock()
 	defer n.mutex.Unlock()
-	n.allSources = append(n.allSources, healthCheckSource)
+	n.defaultKeyedErrorSourceAccumulator.allSources = append(n.defaultKeyedErrorSourceAccumulator.allSources, healthCheckSource)
 }
 
-func (n *defaultKeyedErrorSourceAccumulator) Submit(ctx context.Context, key string, err error) {
-	n.keyedErrorHealthCheckSource.Submit(ctx, key, err)
+func (n *defaultKeyedErrorSourceAccumulatorParent) RootUnderTree(healthCheckSource status.HealthCheckSource) {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+	n.rootedHealthCheck = tree.NewHealthCheckSourceTree(healthCheckSource, []status.HealthCheckSource{n.defaultKeyedErrorSourceAccumulator})
+}
+
+func (n *defaultKeyedErrorSourceAccumulatorParent) Submit(ctx context.Context, key string, err error) {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+	n.defaultKeyedErrorSourceAccumulator.keyedErrorHealthCheckSource.Submit(ctx, key, err)
+}
+
+func (n *defaultKeyedErrorSourceAccumulatorParent) HealthStatus(ctx context.Context) health.HealthStatus {
+	n.mutex.Lock()
+	defer n.mutex.Unlock()
+	return n.rootedHealthCheck.HealthStatus(ctx)
 }
 
 func (n *defaultKeyedErrorSourceAccumulator) HealthStatus(ctx context.Context) health.HealthStatus {
-	n.mutex.Lock()
-	defer n.mutex.Unlock()
 	result := health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{},
 	}
