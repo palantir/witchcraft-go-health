@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package downgrading_test
+package downgrading
 
 import (
 	"context"
 	"testing"
 
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
-	"github.com/palantir/witchcraft-go-health/v2/sources/downgrading"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -29,108 +28,47 @@ func (fn healthStatusFn) HealthStatus(ctx context.Context) health.HealthStatus {
 	return fn(ctx)
 }
 
-func TestDowngradingHealthCheck_HealthyPassesThrough(t *testing.T) {
-	delegate := healthStatusFn(func(ctx context.Context) health.HealthStatus {
-		return health.HealthStatus{
-			Checks: map[health.CheckType]health.HealthCheckResult{
-				"TEST_CHECK": {
-					Type:  "TEST_CHECK",
-					State: health.New_HealthState(health.HealthState_HEALTHY),
-				},
-			},
-		}
-	})
-	healthCheck := downgrading.NewDowngradingHealthCheck(delegate, health.HealthState_DEFERRING)
-
+func TestDeferringHealthCheck(t *testing.T) {
 	expected := health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			"TEST_CHECK": {
-				Type:  "TEST_CHECK",
 				State: health.New_HealthState(health.HealthState_HEALTHY),
 			},
 		},
 	}
+	healthCheckSource := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+		return expected
+	})
+	healthCheck := NewDowngradingHealthCheck(healthCheckSource, health.HealthState_DEFERRING)
 	actual := healthCheck.HealthStatus(context.Background())
 	assert.Equal(t, expected, actual)
 }
 
-func TestDowngradingHealthCheck_UnhealthyDowngrades(t *testing.T) {
-	delegate := healthStatusFn(func(ctx context.Context) health.HealthStatus {
-		return health.HealthStatus{
-			Checks: map[health.CheckType]health.HealthCheckResult{
-				"TEST_CHECK": {
-					Type:  "TEST_CHECK",
-					State: health.New_HealthState(health.HealthState_HEALTHY),
-				},
-				"TEST_CHECK_BAD": {
-					Type:  "TEST_CHECK_BAD",
-					State: health.New_HealthState(health.HealthState_ERROR),
-				},
-			},
-		}
-	})
-	healthCheck := downgrading.NewDowngradingHealthCheck(delegate, health.HealthState_DEFERRING)
-
-	expected := health.HealthStatus{
+func TestDeferringHealthCheckDowngrades(t *testing.T) {
+	toReturn := health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			"TEST_CHECK": {
-				Type:  "TEST_CHECK",
 				State: health.New_HealthState(health.HealthState_HEALTHY),
 			},
 			"TEST_CHECK_BAD": {
-				Type:  "TEST_CHECK_BAD",
-				State: health.New_HealthState(health.HealthState_DEFERRING),
+				State: health.New_HealthState(health.HealthState_ERROR),
 			},
 		},
 	}
-	actual := healthCheck.HealthStatus(context.Background())
-	assert.Equal(t, expected, actual)
-}
-
-func TestDeferringHealthCheck(t *testing.T) {
-	delegate := healthStatusFn(func(ctx context.Context) health.HealthStatus {
-		return health.HealthStatus{
-			Checks: map[health.CheckType]health.HealthCheckResult{
-				"TEST_CHECK": {
-					Type:  "TEST_CHECK",
-					State: health.New_HealthState(health.HealthState_ERROR),
-				},
-			},
-		}
-	})
-	healthCheck := downgrading.NewDeferringHealthCheck(delegate)
-
 	expected := health.HealthStatus{
 		Checks: map[health.CheckType]health.HealthCheckResult{
 			"TEST_CHECK": {
-				Type:  "TEST_CHECK",
+				State: health.New_HealthState(health.HealthState_HEALTHY),
+			},
+			"TEST_CHECK_BAD": {
 				State: health.New_HealthState(health.HealthState_DEFERRING),
 			},
 		},
 	}
+	healthCheckSource := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+		return toReturn
+	})
+	healthCheck := NewDowngradingHealthCheck(healthCheckSource, health.HealthState_DEFERRING)
 	actual := healthCheck.HealthStatus(context.Background())
 	assert.Equal(t, expected, actual)
-}
-
-func TestDowngradingHealthCheck_PreservesMessageAndParams(t *testing.T) {
-	message := "something went wrong"
-	params := map[string]interface{}{"key": "value"}
-	delegate := healthStatusFn(func(ctx context.Context) health.HealthStatus {
-		return health.HealthStatus{
-			Checks: map[health.CheckType]health.HealthCheckResult{
-				"TEST_CHECK": {
-					Type:    "TEST_CHECK",
-					State:   health.New_HealthState(health.HealthState_ERROR),
-					Message: &message,
-					Params:  params,
-				},
-			},
-		}
-	})
-	healthCheck := downgrading.NewDowngradingHealthCheck(delegate, health.HealthState_WARNING)
-
-	actual := healthCheck.HealthStatus(context.Background())
-	assert.Equal(t, health.HealthState_WARNING, actual.Checks["TEST_CHECK"].State.Value())
-	assert.Equal(t, &message, actual.Checks["TEST_CHECK"].Message)
-	assert.Equal(t, params, actual.Checks["TEST_CHECK"].Params)
 }

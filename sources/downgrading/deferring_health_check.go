@@ -19,8 +19,7 @@ import (
 	"github.com/palantir/witchcraft-go-health/v2/status"
 )
 
-// NewDeferringHealthCheck returns a new DowngradingHealthCheck with HealthState_DEFERRING set.
-// This is a convenience function for the common case of deferring unhealthy checks.
+// NewDeferringHealthCheck returns a new NewDowngradingHealthCheck with HealthState_DEFERRING set.
 func NewDeferringHealthCheck(healthCheckSource status.HealthCheckSource) status.HealthCheckSource {
 	return NewDowngradingHealthCheck(healthCheckSource, health.HealthState_DEFERRING)
 }

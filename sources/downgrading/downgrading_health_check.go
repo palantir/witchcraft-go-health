@@ -27,7 +27,7 @@ type downgradingHealthCheck struct {
 }
 
 // NewDowngradingHealthCheck returns a new downgradingHealthCheck which implements status.HealthCheckSource.
-// This health check wraps another health check source and will return its result if healthy.
+// This health check holds its own health check and will return the result of this health check if it's healthy
 // If it is not healthy, it downgrades the health state to the specified downgradeTo value.
 func NewDowngradingHealthCheck(healthCheckSource status.HealthCheckSource, downgradeTo health.HealthState_Value) status.HealthCheckSource {
 	return &downgradingHealthCheck{
