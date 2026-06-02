@@ -15,8 +15,11 @@
 package sources
 
 import (
+	"context"
+
 	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/v2/status"
 )
 
 // UnhealthyHealthCheckResult returns an unhealthy health check result with type checkType and message message.
@@ -61,4 +64,19 @@ func HealthyHealthCheckResult(checkType health.CheckType) health.HealthCheckResu
 func SafeParamsFromError(err error) map[string]any {
 	safeParams, _ := werror.ParamsFromError(err)
 	return safeParams
+}
+
+type staticHealthCheckSource struct {
+	healthStatus health.HealthStatus
+}
+
+func StaticHealthCheckSource(healthStatus health.HealthStatus) status.HealthCheckSource {
+	return &staticHealthCheckSource{
+		healthStatus: healthStatus,
+	}
+}
+
+// HealthStatus implements [status.HealthCheckSource].
+func (s *staticHealthCheckSource) HealthStatus(ctx context.Context) health.HealthStatus {
+	return s.healthStatus
 }
