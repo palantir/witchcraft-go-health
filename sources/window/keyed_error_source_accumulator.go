@@ -31,6 +31,7 @@ import (
 // This can be useful if you are working in legacy code bases and are in the process of converting health check, but need to add existing checks into a KeyedErrorHealthCheckSource
 type KeyedErrorSourceAccumulator interface {
 	AddHealthCheckSource(healthCheckSource status.HealthCheckSource)
+	RootUnderTree(healthCheckSource status.HealthCheckSource)
 	KeyedErrorHealthCheckSource
 }
 
@@ -52,9 +53,7 @@ func NewDefaultKeyedErrorSourceAccumulator(keyedErrorHealthCheckSource KeyedErro
 		allSources:                  []status.HealthCheckSource{keyedErrorHealthCheckSource},
 	}
 	staticParent := sources.StaticHealthCheckSource(health.HealthStatus{
-		Checks: map[health.CheckType]health.HealthCheckResult{
-			"ALWAYS_HEALTHY": sources.HealthyHealthCheckResult("ALWAYS_HEALTHY"),
-		},
+		Checks: map[health.CheckType]health.HealthCheckResult{},
 	})
 	defaultKeyedErrorSourceAccumulatorParent := &defaultKeyedErrorSourceAccumulatorParent{
 		defaultKeyedErrorSourceAccumulator: defaultKeyedErrorSourceAccumulator,
