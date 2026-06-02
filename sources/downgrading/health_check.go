@@ -71,3 +71,18 @@ func (d *downgradingHealthCheck) getHealthCheckResultStatus(state health.HealthS
 	}
 	return health.New_HealthState(d.downgradeTo)
 }
+
+// NewDeferringHealthCheck returns a new NewDowngradingHealthCheck with HealthState_DEFERRING set.
+func NewDeferringHealthCheck(healthCheckSource status.HealthCheckSource) status.HealthCheckSource {
+	return NewDowngradingHealthCheck(healthCheckSource, health.HealthState_DEFERRING)
+}
+
+// NewWarningHealthCheck returns a new NewDowngradingHealthCheck with HealthState_WARNING set.
+func NewWarningHealthCheck(healthCheckSource status.HealthCheckSource) status.HealthCheckSource {
+	return NewDowngradingHealthCheck(healthCheckSource, health.HealthState_WARNING)
+}
+
+// NewRepairingHealthCheck returns a new NewDowngradingHealthCheck with HealthState_REPAIRING set.
+func NewRepairingHealthCheck(healthCheckSource status.HealthCheckSource) status.HealthCheckSource {
+	return NewDowngradingHealthCheck(healthCheckSource, health.HealthState_REPAIRING)
+}
