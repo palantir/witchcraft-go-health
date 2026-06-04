@@ -2,7 +2,7 @@ module github.com/palantir/witchcraft-go-health/v2
 
 go 1.26.0
 
-toolchain go1.26.3
+toolchain go1.26.4
 
 require (
 	github.com/palantir/pkg/refreshable/v2 v2.9.0
