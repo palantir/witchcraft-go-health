@@ -74,12 +74,16 @@ func NewHealthCheckSourceTree(
 
 func (n *healthCheckSourceTreeNode) HealthStatus(ctx context.Context) health.HealthStatus {
 	ownHealthStatus := n.healthCheckSource.HealthStatus(ctx)
+	result := health.HealthStatus{
+		Checks: make(map[health.CheckType]health.HealthCheckResult, len(ownHealthStatus.Checks)),
+	}
+	maps.Copy(result.Checks, ownHealthStatus.Checks)
 	if !n.traverseForHealthState(ownHealthStatus) {
-		return ownHealthStatus
+		return result
 	}
 	healthStatusFromChildSources := n.combinedChildrenHealthCheckSource.HealthStatus(ctx)
-	maps.Copy(ownHealthStatus.Checks, healthStatusFromChildSources.Checks)
-	return ownHealthStatus
+	maps.Copy(result.Checks, healthStatusFromChildSources.Checks)
+	return result
 }
 
 func healthStateFromChecks(checks map[health.CheckType]health.HealthCheckResult) health.HealthState {
