@@ -42,6 +42,31 @@ func TestKeyedErrorSourceAccumulatorCanError(t *testing.T) {
 	}, keyedErrorSourceAccumulator.HealthStatus(context.Background()))
 }
 
+func TestKeyedErrorSourceAccumulatorRecoversAfterHealthStatusRead(t *testing.T) {
+	keyedErrorSourceAccumulator := NewDefaultKeyedErrorSourceAccumulator(MustNewKeyedErrorHealthCheckSource("HUB_AUTH", HealthyIfNotAllErrors))
+	keyedErrorSourceAccumulator.Submit(context.Background(), "TOKEN_PROVIDER_ITERATION", errors.New("uhoh"))
+	str := ""
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"HUB_AUTH": {
+				Type:    "HUB_AUTH",
+				State:   health.New_HealthState(health.HealthState_ERROR),
+				Message: &str,
+				Params: map[string]any{
+					"TOKEN_PROVIDER_ITERATION": "uhoh",
+				},
+			},
+		},
+	}, keyedErrorSourceAccumulator.HealthStatus(context.Background()))
+
+	keyedErrorSourceAccumulator.Submit(context.Background(), "TOKEN_PROVIDER_ITERATION", nil)
+	assert.Equal(t, health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"HUB_AUTH": sources.HealthyHealthCheckResult("HUB_AUTH"),
+		},
+	}, keyedErrorSourceAccumulator.HealthStatus(context.Background()))
+}
+
 func TestKeyedErrorSourceAccumulatorCanAdd(t *testing.T) {
 	keyedErrorSourceAccumulator := NewDefaultKeyedErrorSourceAccumulator(MustNewKeyedErrorHealthCheckSource("check", UnhealthyIfAtLeastOneError))
 	assert.Equal(t, health.HealthStatus{
