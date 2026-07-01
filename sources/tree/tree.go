@@ -53,7 +53,7 @@ func WithTraverseForHealthStatus(fn TraverseForHealthStatus) CheckSourceTreePara
 	})
 }
 
-// NewHealthCheckSourceTree returns a new health check source tree node that uses the result of its own healt h check
+// NewHealthCheckSourceTree returns a new health check source tree node that uses the result of its own health check
 // to determine if it should invoke the provided child health checks. The default behavior is to only traverse to child
 // checks if the most severe health state of the current node's health status is health.HealthState_HEALTHY.
 func NewHealthCheckSourceTree(
