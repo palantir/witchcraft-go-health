@@ -284,3 +284,29 @@ func TestHealthBasedReadinessSource(t *testing.T) {
 		})
 	}
 }
+
+func TestHealthCheckSourceFunc(t *testing.T) {
+	type ctxKey struct{}
+	ctx := context.WithValue(context.Background(), ctxKey{}, "sentinel")
+	expected := health.HealthStatus{
+		Checks: map[health.CheckType]health.HealthCheckResult{
+			"check": {
+				State: health.New_HealthState(health.HealthState_HEALTHY),
+			},
+		},
+	}
+
+	var gotCtx context.Context
+	var source HealthCheckSource = HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
+		gotCtx = ctx
+		return expected
+	})
+
+	assert.Equal(t, expected, source.HealthStatus(ctx))
+	assert.Equal(t, ctx, gotCtx)
+}
+
+func TestHealthCheckSourceFuncNil(t *testing.T) {
+	var source HealthCheckSource = HealthCheckSourceFunc(nil)
+	assert.Equal(t, health.HealthStatus{}, source.HealthStatus(context.Background()))
+}
