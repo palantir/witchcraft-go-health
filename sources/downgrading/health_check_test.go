@@ -19,14 +19,9 @@ import (
 	"testing"
 
 	"github.com/palantir/witchcraft-go-health/v2/conjure/witchcraft/api/health"
+	"github.com/palantir/witchcraft-go-health/v2/status"
 	"github.com/stretchr/testify/assert"
 )
-
-type healthStatusFn func(ctx context.Context) health.HealthStatus
-
-func (fn healthStatusFn) HealthStatus(ctx context.Context) health.HealthStatus {
-	return fn(ctx)
-}
 
 func TestDeferringHealthCheck(t *testing.T) {
 	expected := health.HealthStatus{
@@ -36,7 +31,7 @@ func TestDeferringHealthCheck(t *testing.T) {
 			},
 		},
 	}
-	healthCheckSource := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	healthCheckSource := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return expected
 	})
 	healthCheck := NewDowngradingHealthCheck(healthCheckSource, health.HealthState_DEFERRING)
@@ -65,7 +60,7 @@ func TestDeferringHealthCheckDowngrades(t *testing.T) {
 			},
 		},
 	}
-	healthCheckSource := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	healthCheckSource := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return toReturn
 	})
 	healthCheck := NewDowngradingHealthCheck(healthCheckSource, health.HealthState_DEFERRING)
