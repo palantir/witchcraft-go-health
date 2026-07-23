@@ -24,21 +24,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type healthStatusFn func(ctx context.Context) health.HealthStatus
-
-func (fn healthStatusFn) HealthStatus(ctx context.Context) health.HealthStatus {
-	return fn(ctx)
-}
-
 func TestHealthCheckSourceTree(t *testing.T) {
-	someChildCheck := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	someChildCheck := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				"CHILD": {},
 			},
 		}
 	})
-	alwaysErrParentCheck := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	alwaysErrParentCheck := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				"PARENT": {
@@ -56,7 +50,7 @@ func TestHealthCheckSourceTree(t *testing.T) {
 		},
 	}, treeSource.HealthStatus(context.Background()))
 
-	healthyParentCheck := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	healthyParentCheck := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				"PARENT": {
@@ -78,12 +72,12 @@ func TestHealthCheckSourceTree(t *testing.T) {
 
 func TestHealthCheckSourceTreeDoesNotMutateParentChecksMap(t *testing.T) {
 	parentChecks := map[health.CheckType]health.HealthCheckResult{}
-	parentCheck := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	parentCheck := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return health.HealthStatus{
 			Checks: parentChecks,
 		}
 	})
-	childCheck := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	childCheck := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				"CHILD": {
@@ -106,7 +100,7 @@ func TestHealthCheckSourceTreeDoesNotMutateParentChecksMap(t *testing.T) {
 }
 
 func TestHealthCheckSourceTreeWithTraverseForHealthState(t *testing.T) {
-	dummyChildCheck := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	dummyChildCheck := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				"CHILD_CHECK": {
@@ -115,7 +109,7 @@ func TestHealthCheckSourceTreeWithTraverseForHealthState(t *testing.T) {
 			},
 		}
 	})
-	unhealthyParentCheck := healthStatusFn(func(ctx context.Context) health.HealthStatus {
+	unhealthyParentCheck := status.HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
 		return health.HealthStatus{
 			Checks: map[health.CheckType]health.HealthCheckResult{
 				"TEST_CHECK": {

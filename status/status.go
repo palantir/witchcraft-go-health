@@ -54,6 +54,18 @@ type HealthCheckSource interface {
 	HealthStatus(ctx context.Context) health.HealthStatus
 }
 
+// HealthCheckSourceFunc is a function that implements HealthCheckSource.
+type HealthCheckSourceFunc func(ctx context.Context) health.HealthStatus
+
+// HealthStatus implements HealthCheckSource by calling f(ctx). A nil HealthCheckSourceFunc
+// reports an empty health.HealthStatus.
+func (f HealthCheckSourceFunc) HealthStatus(ctx context.Context) health.HealthStatus {
+	if f == nil {
+		return health.HealthStatus{}
+	}
+	return f(ctx)
+}
+
 type combinedHealthCheckSource struct {
 	healthCheckSources refreshable.Refreshable[[]HealthCheckSource]
 }
