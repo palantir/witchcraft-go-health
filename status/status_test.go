@@ -296,14 +296,12 @@ func TestHealthCheckSourceFunc(t *testing.T) {
 		},
 	}
 
-	var gotCtx context.Context
-	var source HealthCheckSource = HealthCheckSourceFunc(func(ctx context.Context) health.HealthStatus {
-		gotCtx = ctx
+	var source HealthCheckSource = HealthCheckSourceFunc(func(gotCtx context.Context) health.HealthStatus {
+		assert.Equal(t, ctx, gotCtx)
 		return expected
 	})
 
 	assert.Equal(t, expected, source.HealthStatus(ctx))
-	assert.Equal(t, ctx, gotCtx)
 }
 
 func TestHealthCheckSourceFuncNil(t *testing.T) {
