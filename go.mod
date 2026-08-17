@@ -19,7 +19,7 @@ require (
 	github.com/palantir/pkg/safelong v1.3.0 // indirect
 	github.com/palantir/pkg/transform v1.2.0 // indirect
 	github.com/palantir/pkg/uuid v1.3.0 // indirect
-	github.com/palantir/witchcraft-go-params v1.43.0 // indirect
+	github.com/palantir/witchcraft-go-params v1.44.0 // indirect
 	github.com/palantir/witchcraft-go-tracing v1.46.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
