@@ -9,7 +9,7 @@ require (
 	github.com/palantir/pkg/safejson v1.2.0
 	github.com/palantir/pkg/safeyaml v1.2.0
 	github.com/palantir/witchcraft-go-error v1.47.0
-	github.com/palantir/witchcraft-go-logging v1.70.0
+	github.com/palantir/witchcraft-go-logging v1.71.0
 	github.com/stretchr/testify v1.12.1
 )
 
