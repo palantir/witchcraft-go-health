@@ -1,6 +1,0 @@
-type: fix
-fix:
-  description: |-
-    Fix MustNewHealthCheckSource to pass provided options to NewHealthCheckSource
-  links:
-    - https://github.com/palantir/witchcraft-go-health/pull/71

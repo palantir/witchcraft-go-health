@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: Don't report the last heartbeat timestamp unless the check is unhealthy
-  links:
-  - https://github.com/palantir/witchcraft-go-health/pull/51

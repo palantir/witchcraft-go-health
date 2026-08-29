@@ -1,5 +1,0 @@
-type: feature
-feature:
-  description: Add HealthyIfNoRecentErrors to window.ErrorHealthCheckSource
-  links:
-  - https://github.com/palantir/witchcraft-go-health/pull/12
