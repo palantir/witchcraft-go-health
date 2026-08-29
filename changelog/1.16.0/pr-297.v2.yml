@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: Add a KeyedErrorSourceAccumulator interface and implementation
-  links:
-  - https://github.com/palantir/witchcraft-go-health/pull/297

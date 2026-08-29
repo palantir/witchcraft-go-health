@@ -1,5 +1,0 @@
-type: improvement
-improvement:
-  description: Fix HealthyIfNoRecentErrors behavior to return healthy when there are no submissions within the evaluation window
-  links:
-  - https://github.com/palantir/witchcraft-go-health/pull/187
