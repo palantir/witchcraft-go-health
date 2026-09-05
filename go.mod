@@ -14,7 +14,7 @@ require (
 )
 
 require (
-	github.com/palantir/pkg v1.1.0 // indirect
+	github.com/palantir/pkg v1.2.0 // indirect
 	github.com/palantir/pkg/datetime v1.4.0 // indirect
 	github.com/palantir/pkg/safelong v1.3.0 // indirect
 	github.com/palantir/pkg/transform v1.2.0 // indirect
