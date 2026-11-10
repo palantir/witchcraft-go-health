@@ -14,7 +14,7 @@ type HealthCheckResult struct {
 	// Health state of the check.
 	State HealthState `json:"state"`
 	// Text describing the state of the check which should provide enough information for the check to be actionable when included in an alert.
-	Message *string `json:"message,omitempty"`
+	Message *string `json:"message,omitzero"`
 	// Additional redacted information on the nature of the health check.
 	Params map[string]interface{} `json:"params"`
 }
